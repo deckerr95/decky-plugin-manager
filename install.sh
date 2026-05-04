@@ -33,7 +33,7 @@ cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
 Name=Decky Plugin Manager (DPM)
 Comment=Enable/disable Decky Loader plugins
-Exec=$SYMLINK
+Exec=xdg-terminal-exec bash -c "$SYMLINK"
 Terminal=true
 Type=Application
 Icon=system-run
