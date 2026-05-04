@@ -72,6 +72,10 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   exit 0
 fi
 
+(
+  curl -fsSL "$VERSION_URL" -o "$TMP_VERSION_FILE" 2>/dev/null || true
+) &
+
 if [ "$EUID" -ne 0 ]; then
   exec sudo "$0" "$@"
 fi
@@ -82,10 +86,6 @@ DIS="$BASE/homebrew.disabled"
 
 mkdir -p "$PLUG"
 mkdir -p "$DIS"
-
-(
-  curl -fsSL "$VERSION_URL" -o "$TMP_VERSION_FILE" 2>/dev/null || true
-) &
 
 while true; do
   clear
