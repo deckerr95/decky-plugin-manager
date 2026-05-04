@@ -1,6 +1,22 @@
 #!/bin/bash
 set -e
 
+# handle uninstall before anything else
+if [[ "${1:-}" == "--uninstall" ]]; then
+  TARGET="$(readlink -f "$0")"
+  INSTALL_DIR="$(dirname "$TARGET")"
+  SYMLINK="$INSTALL_DIR/dpm"
+
+  read -rp "Uninstall decky-plugin-manager? [y/N]: " confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || exit 0
+
+  rm -f "$SYMLINK"
+  rm -f "$TARGET"
+
+  echo "Uninstalled decky-plugin-manager."
+  exit 0
+fi
+
 if [ "$EUID" -ne 0 ]; then
   exec sudo "$0" "$@"
 fi
@@ -13,7 +29,7 @@ mkdir -p "$DIS"
 while true; do
   clear
 
-  echo "Decky Plugin Toggler"
+  echo "Decky Plugin Manager"
   echo "Select a plugin to enable/disable."
   echo "Changes require restarting Steam/system to take effect."
   echo
