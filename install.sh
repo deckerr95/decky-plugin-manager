@@ -7,6 +7,7 @@ INSTALL_DIR="$HOME/.local/bin"
 BIN_NAME="decky-plugin-manager"
 TARGET="$INSTALL_DIR/$BIN_NAME"
 SYMLINK="$INSTALL_DIR/dpm"
+DESKTOP_FILE="$HOME/.local/share/applications/dpm.desktop"
 
 mkdir -p "$INSTALL_DIR"
 
@@ -25,6 +26,22 @@ ln -sf "$TARGET" "$SYMLINK"
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
   echo "Note: add to PATH if needed: export PATH=\"$INSTALL_DIR:\$PATH\""
 fi
+
+
+
+cat > "$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Name=Decky Plugin Manager (DPM)
+Comment=Enable/disable Decky Loader plugins
+Exec=$SYMLINK
+Terminal=true
+Type=Application
+Categories=Utility;
+StartupNotify=false
+EOF
+chmod +x "$DESKTOP_FILE"
+
+
 
 echo "Installed: $TARGET"
 echo "Alias: $SYMLINK"
