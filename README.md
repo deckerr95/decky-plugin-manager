@@ -1,4 +1,3 @@
-````md
 # Decky Plugin Manager
 
 A simple CLI tool to individually enable/disable Decky Loader plugins. Useful when a single broken plugin prevents Decky from loading after SteamOS updates.
@@ -20,7 +19,7 @@ A simple CLI tool to individually enable/disable Decky Loader plugins. Useful wh
 
 ```bash
 curl -fsSL http://IP:8000/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
-````
+```
 
 ---
 
