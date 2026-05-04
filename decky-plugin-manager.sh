@@ -86,7 +86,7 @@ mkdir -p "$DIS"
 while true; do
   clear
   
-  if [[ $UPDATE_CHECK_DONE -eq 0 && -f "$TMP_VERSION_FILE" ]]; then
+  if [[ -f "$TMP_VERSION_FILE" && $UPDATE_CHECK_DONE -eq 0 ]]; then
     REMOTE_VERSION="$(tr -d ' \n' < "$TMP_VERSION_FILE")"
 
     if [[ -n "$REMOTE_VERSION" ]]; then
