@@ -53,9 +53,11 @@ if [ "$EUID" -ne 0 ]; then
   exec sudo "$0" "$@"
 fi
 
-BASE="$(eval echo ~${SUDO_USER:-$USER})/homebrew"
-PLUG="$BASE/plugins"
-DIS="$BASE/disabled"
+BASE="$(eval echo ~${SUDO_USER:-$USER})"
+PLUG="$BASE/homebrew/plugins"
+DIS="$BASE/homebrew.disabled"
+
+mkdir -p "$PLUG"
 mkdir -p "$DIS"
 
 while true; do
