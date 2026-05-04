@@ -46,6 +46,7 @@ chmod +x "$DESKTOP_FILE"
 echo "Installed: $TARGET"
 echo "Alias: $SYMLINK"
 echo "Run with: $BIN_NAME or dpm"
+echo "Desktop entry created: $HOME/.local/share/applications/dpm.desktop (use 'Add to Steam' to run in Gaming Mode)"
 
 if [[ -t 0 ]]; then
   read -rp "Press Enter to exit..."
