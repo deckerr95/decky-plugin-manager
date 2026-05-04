@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# echo "test test test"
-# exit
-
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/latest"
 REPO_RAW_URL="http://192.168.1.118:8000"
 INSTALL_DIR="$HOME/.local/bin"

@@ -1,19 +1,35 @@
 #!/bin/bash
 set -e
 
-# handle uninstall before anything else
 if [[ "${1:-}" == "--uninstall" ]]; then
   TARGET="$(readlink -f "$0")"
   INSTALL_DIR="$(dirname "$TARGET")"
   SYMLINK="$INSTALL_DIR/dpm"
 
-  read -rp "Uninstall decky-plugin-manager? [y/N]: " confirm
+  echo "Uninstalling decky-plugin-manager..."
+  echo "Target binary: $TARGET"
+  echo "Symlink: $SYMLINK"
+  echo
+
+  read -rp "Proceed? [y/N]: " confirm
   [[ "$confirm" =~ ^[Yy]$ ]] || exit 0
 
-  rm -f "$SYMLINK"
-  rm -f "$TARGET"
+  if [[ -L "$SYMLINK" || -e "$SYMLINK" ]]; then
+    rm -f "$SYMLINK"
+    echo "Removed: $SYMLINK"
+  else
+    echo "Skipped (not found): $SYMLINK"
+  fi
 
-  echo "Uninstalled decky-plugin-manager."
+  if [[ -f "$TARGET" ]]; then
+    rm -f "$TARGET"
+    echo "Removed: $TARGET"
+  else
+    echo "Skipped (not found): $TARGET"
+  fi
+
+  echo
+  echo "Uninstall complete."
   exit 0
 fi
 
