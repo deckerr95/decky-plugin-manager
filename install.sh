@@ -2,7 +2,9 @@
 set -euo pipefail
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/latest"
+# REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.118:8000"
+VERSION_URL="$REPO_RAW_URL/version"
 INSTALL_DIR="$HOME/.local/bin"
 BIN_NAME="decky-plugin-manager"
 TARGET="$INSTALL_DIR/$BIN_NAME"

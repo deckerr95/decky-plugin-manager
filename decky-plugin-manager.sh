@@ -1,6 +1,25 @@
 #!/bin/bash
 set -e
 
+VERSION="0.5.0"
+
+# REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+REPO_RAW_URL="http://192.168.1.118:8000"
+VERSION_URL="$REPO_RAW_URL/version"
+
+UPDATE_AVAILABLE=0
+REMOTE_VERSION=""
+UPDATE_CHECK_DONE=0
+TMP_VERSION_FILE="/tmp/dpm_version"
+
+GREEN="\e[32m"
+RESET="\e[0m"
+
+if [[ "${1:-}" == "--version" ]]; then
+  echo "$VERSION"
+  exit 0
+fi
+
 if [[ "${1:-}" == "--uninstall" ]]; then
   TARGET="$(readlink -f "$0")"
   INSTALL_DIR="$(dirname "$(readlink -f "$0")")"
@@ -60,10 +79,31 @@ DIS="$BASE/homebrew.disabled"
 mkdir -p "$PLUG"
 mkdir -p "$DIS"
 
+(
+  curl -fsSL "$VERSION_URL" -o "$TMP_VERSION_FILE" 2>/dev/null || true
+) &
+
 while true; do
   clear
+  
+  if [[ $UPDATE_CHECK_DONE -eq 0 && -f "$TMP_VERSION_FILE" ]]; then
+    REMOTE_VERSION="$(tr -d ' \n' < "$TMP_VERSION_FILE")"
 
-  echo "Decky Plugin Manager"
+    if [[ -n "$REMOTE_VERSION" ]]; then
+      if [[ "$(printf '%s\n' "$VERSION" "$REMOTE_VERSION" | sort -V | tail -n1)" != "$VERSION" ]]; then
+        UPDATE_AVAILABLE=1
+      fi
+    fi
+
+    UPDATE_CHECK_DONE=1
+  fi
+
+  TITLE="Decky Plugin Manager $VERSION"
+  if [[ $UPDATE_AVAILABLE -eq 1 && -n "$REMOTE_VERSION" ]]; then
+    TITLE="$TITLE - ${GREEN}New Update: $REMOTE_VERSION${RESET}"
+  fi
+  echo -e "$TITLE"
+  
   echo "Select a plugin to enable/disable."
   echo "Changes require restarting Steam/system to take effect."
   echo
