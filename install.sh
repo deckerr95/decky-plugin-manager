@@ -29,3 +29,7 @@ fi
 echo "Installed: $TARGET"
 echo "Alias: $SYMLINK"
 echo "Run with: $BIN_NAME or dpm"
+
+if [[ -t 0 ]]; then
+  read -rp "Press Enter to exit..."
+fi
