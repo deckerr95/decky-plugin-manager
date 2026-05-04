@@ -36,6 +36,7 @@ Comment=Enable/disable Decky Loader plugins
 Exec=$SYMLINK
 Terminal=true
 Type=Application
+Icon=system-run
 Categories=Utility;
 StartupNotify=false
 EOF
