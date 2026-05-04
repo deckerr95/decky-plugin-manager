@@ -16,21 +16,21 @@ A simple CLI tool to individually enable/disable Decky Loader plugins. Useful wh
 
 ## Installation
 
-### Recommended (safe install via script download)
-
-```bash
-$ curl -fsSL http://IP:8000/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
-```
-
----
-
-### Desktop launcher (Steam Deck friendly)
+### Steam Deck friendly
 
 Download and run:
 
 [Install Decky Plugin Manager](http://192.168.1.118:8000/install-decky-plugin-manager.desktop)
 
 This provides a one-click installer usable from Desktop Mode.
+
+---
+
+### Safe install via script download
+
+```bash
+curl -fsSL http://IP:8000/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
+```
 
 ---
 
@@ -43,13 +43,13 @@ Start via `Decky Plugin Manager (DPM)` desktop launcher
 Or from terminal:
 
 ```bash
-$ decky-plugin-manager
+decky-plugin-manager
 ```
 
 Or:
 
 ```bash
-$ dpm
+dpm
 ```
 
 ---
@@ -61,7 +61,7 @@ Run the desktop launcher `Decky Plugin Manager (Uninstall)`
 Or run:
 
 ```bash
-$ decky-plugin-manager --uninstall
+decky-plugin-manager --uninstall
 ```
 
 This removes:
@@ -71,7 +71,7 @@ This removes:
 
 ---
 
-## Default install location
+## Install location
 
 ```bash
 ~/.local/bin/decky-plugin-manager
@@ -105,6 +105,16 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ---
 
+## Purpose of this project
+
+It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This results in Decky crashing. For users, the only real options to fix this are:
+1.) going into desktop mode, opening a terminal, and deleting the plugin from `/home/deck/homebrew/plugins/`
+2.) SSH-ing into the deck, and deleting the plugin
+
+This project aims to make the process of disabling individual Decky plugins a lot easier and quicker.
+
+---
+
 ## Notes
 
 * A broken plugin can crash Decky Loader; this tool isolates that issue
@@ -127,17 +137,3 @@ If plugins do not appear:
 ```
 
 must exist and contain Decky plugins.
-
----
-
-## Security note
-
-The installer executes remote code. Only use trusted sources (official GitHub releases or self-hosted trusted server).
-
-## Purpose of this project
-
-It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This results in Decky crashing. For users, the only real options to fix this are:
-1.) going into desktop mode, opening a terminal, and deleting the plugin from `/home/deck/homebrew/plugins/`
-2.) SSH-ing into the deck, and deleting the plugin
-
-This project aims to make the process of disabling individual Decky plugins a lot easier and quicker.
