@@ -12,6 +12,10 @@ REMOTE_VERSION=""
 UPDATE_CHECK_DONE=0
 TMP_VERSION_FILE="/tmp/dpm_version"
 
+if [[ -f "$TMP_VERSION_FILE" ]]; then
+  rm -f "$TMP_VERSION_FILE"
+fi
+
 GREEN="\e[32m"
 RESET="\e[0m"
 
