@@ -135,6 +135,3 @@ must exist and contain Decky plugins.
 ## Security note
 
 The installer executes remote code. Only use trusted sources (official GitHub releases or self-hosted trusted server).
-
-```
-```
