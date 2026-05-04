@@ -3,9 +3,10 @@ set -e
 
 if [[ "${1:-}" == "--uninstall" ]]; then
   TARGET="$(readlink -f "$0")"
-  INSTALL_DIR="$(dirname "$TARGET")"
+  INSTALL_DIR="$(dirname "$(readlink -f "$0")")"
   SYMLINK="$INSTALL_DIR/dpm"
   DESKTOP_FILE="$HOME/.local/share/applications/dpm.desktop"
+  UNINSTALL_DESKTOP_FILE="$HOME/.local/share/applications/dpm-uninstall.desktop"
 
   echo "Uninstalling decky-plugin-manager..."
   echo "Target binary: $TARGET"
@@ -34,6 +35,13 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     echo "Removed: $DESKTOP_FILE"
   else
     echo "Skipped (not found): $DESKTOP_FILE"
+  fi
+  
+  if [[ -f "$UNINSTALL_DESKTOP_FILE" ]]; then
+    rm -f "$UNINSTALL_DESKTOP_FILE"
+    echo "Removed: $UNINSTALL_DESKTOP_FILE"
+  else
+    echo "Skipped (not found): $UNINSTALL_DESKTOP_FILE"
   fi
 
   echo
