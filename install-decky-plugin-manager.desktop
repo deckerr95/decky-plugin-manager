@@ -1,0 +1,8 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Install Decky Plugin Manager
+Exec=sh -c 'rm -f /tmp/dpm_install.sh; if curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o /tmp/dpm_install.sh; then bash /tmp/dpm_install.sh; else echo "Install failed. Check connection or URL."; read; fi'
+Icon=steamdeck-gaming-return
+Terminal=true
+Type=Application
+StartupNotify=false
