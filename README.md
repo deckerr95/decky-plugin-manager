@@ -9,8 +9,8 @@ A simple CLI tool to individually enable/disable Decky Loader plugins. Useful wh
 - Prevent full Decky breakage from a single bad plugin
 - Lightweight CLI interface
 - Works directly with Decky plugin directories
-- Adds desktop launchers for the main tool, as well as the uninstaller
-- One-click uninstall
+- Adds desktop launchers for the main tool, as well as the uninstaller, for easy access
+- Easy installation and uninstallation
 
 ---
 
@@ -108,8 +108,10 @@ export PATH="$HOME/.local/bin:$PATH"
 ## Purpose of this project
 
 It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This results in Decky crashing. For users, the only real options to fix this are:
-1.) going into desktop mode, opening a terminal, and deleting the plugin from `/home/deck/homebrew/plugins/`
-2.) SSH-ing into the deck, and deleting the plugin
+
+1. going into desktop mode, opening a terminal, and deleting the plugin from `/home/deck/homebrew/plugins/`
+
+2. SSH-ing into the deck, and deleting the plugin
 
 This project aims to make the process of disabling individual Decky plugins a lot easier and quicker.
 
