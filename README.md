@@ -35,7 +35,7 @@ bash <(curl -fsSL http://IP:8000/install.sh)
 
 Download and run:
 
-[Install Decky Plugin Manager](http://IP:8000/install-decky-plugin-manager.desktop)
+[Install Decky Plugin Manager](http://192.168.1.118:8000/install-decky-plugin-manager.desktop)
 
 This provides a one-click installer usable from Desktop Mode.
 
