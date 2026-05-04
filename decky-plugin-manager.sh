@@ -110,6 +110,7 @@ while true; do
 
   declare -A map=()
   options=("Exit")
+  [[ $UPDATE_AVAILABLE -eq 1 ]] && options+=("Update to latest")
 
   for f in "$PLUG"/*; do
     [ -e "$f" ] || continue
@@ -129,6 +130,18 @@ while true; do
 
   echo "Plugins:"
   select opt in "${options[@]}"; do
+    if [[ "$opt" == "Update to latest" ]]; then
+      echo "Updating..."
+      if curl -fsSL "$REPO_RAW_URL/install.sh" | bash; then
+        echo "Update complete. Restarting..."
+        sleep 1
+        exec "$0" "$@"
+      else
+        echo "Update failed."
+        sleep 3
+      fi
+      break
+    fi
     [ "$opt" = "Exit" ] && exit 0
     [ -z "$opt" ] && break
 
