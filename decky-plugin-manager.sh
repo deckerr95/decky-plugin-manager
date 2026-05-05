@@ -10,8 +10,9 @@ VERSION_URL="$REPO_RAW_URL/version"
 UPDATE_AVAILABLE=0
 REMOTE_VERSION=""
 UPDATE_CHECK_DONE=0
-TMP_VERSION_FILE="/tmp/dpm_version"
+TMP_VERSION_FILE="$HOME/.cache/dpm/version"
 
+mkdir -p "$(dirname "$TMP_VERSION_FILE")"
 if [[ -f "$TMP_VERSION_FILE" ]]; then
   rm -f "$TMP_VERSION_FILE"
 fi
