@@ -5,13 +5,16 @@ set -euo pipefail
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.118:8000"
 VERSION_URL="$REPO_RAW_URL/version"
-INSTALL_DIR="$HOME/.local/bin"
+
+USER_NAME="${SUDO_USER:-$USER}"
+USER_HOME="$(eval echo ~$USER_NAME)"
+DESKTOP_FILE="$USER_HOME/.local/share/applications/dpm.desktop"
+UNINSTALL_DESKTOP_FILE="$USER_HOME/.local/share/applications/dpm-uninstall.desktop"
+INSTALL_DIR="$USER_HOME/.local/bin"
+
 BIN_NAME="decky-plugin-manager"
 TARGET="$INSTALL_DIR/$BIN_NAME"
 SYMLINK="$INSTALL_DIR/dpm"
-
-DESKTOP_FILE="$HOME/.local/share/applications/dpm.desktop"
-UNINSTALL_DESKTOP_FILE="$HOME/.local/share/applications/dpm-uninstall.desktop"
 
 mkdir -p "$INSTALL_DIR"
 
@@ -61,11 +64,14 @@ chmod +x "$UNINSTALL_DESKTOP_FILE"
 
 echo "Installed: $TARGET"
 echo "Alias: $SYMLINK"
+echo
 echo "Desktop entries created:"
 echo " - $DESKTOP_FILE"
 echo " - $UNINSTALL_DESKTOP_FILE"
 echo " - (use 'Add to Steam' to run in Gaming Mode)"
-echo "Run with: $BIN_NAME or dpm"
+echo
+echo "Run with: $BIN_NAME or dpm, or using the desktop launcher: Decky Plugin Manager (DPM)"
+echo
 
 if [[ -t 0 ]]; then
   read -rp "Press Enter to exit..."

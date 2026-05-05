@@ -29,8 +29,9 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   TARGET="$(readlink -f "$0")"
   INSTALL_DIR="$(dirname "$(readlink -f "$0")")"
   SYMLINK="$INSTALL_DIR/dpm"
-  DESKTOP_FILE="$HOME/.local/share/applications/dpm.desktop"
-  UNINSTALL_DESKTOP_FILE="$HOME/.local/share/applications/dpm-uninstall.desktop"
+  USER_HOME="$(eval echo ~${SUDO_USER:-$USER})"
+  DESKTOP_FILE="$USER_HOME/.local/share/applications/dpm.desktop"
+  UNINSTALL_DESKTOP_FILE="$USER_HOME/.local/share/applications/dpm-uninstall.desktop"
 
   echo "Uninstalling decky-plugin-manager..."
   echo "Target binary: $TARGET"
@@ -74,13 +75,27 @@ if [[ "${1:-}" == "--uninstall" ]]; then
 fi
 
 (
-  curl -fsSL "$VERSION_URL" -o "$TMP_VERSION_FILE" 2>/dev/null || true
-) &
+  curl -fsSL \
+    --connect-timeout 2 \
+    --max-time 5 \
+    "$VERSION_URL" -o "$TMP_VERSION_FILE" \
+    >/dev/null 2>&1 || true
+) </dev/null &
+disown
 
-if [ "$EUID" -ne 0 ]; then
-  exec sudo "$0" "$@"
-fi
+move() {
+  if [[ "$(stat -c '%U' "$1")" == "root" ]]; then
+    if ! sudo -n true 2>/dev/null; then
+      echo
+      echo "The plugin's directory is owned by root. Please provide root password to continue: "
+    fi
+    sudo mv "$1" "$2"
+  else
+    mv "$1" "$2"
+  fi
+}
 
+USER_NAME="${SUDO_USER:-$USER}"
 BASE="$(eval echo ~${SUDO_USER:-$USER})"
 PLUG="$BASE/homebrew/plugins"
 DIS="$BASE/homebrew.disabled"
@@ -137,7 +152,7 @@ while true; do
   select opt in "${options[@]}"; do
     if [[ "$opt" == "Update to latest" ]]; then
       echo "Updating..."
-      if curl -fsSL "$REPO_RAW_URL/install.sh" | bash; then
+      if curl -fsSL "$REPO_RAW_URL/install.sh" | env HOME="$BASE" bash; then
         echo "Update complete. Restarting..."
         sleep 1
         exec "$0" "$@"
@@ -154,9 +169,9 @@ while true; do
     name=$(basename "$path")
 
     if [ "$state" = "enabled" ]; then
-      mv "$path" "$DIS/$name" && echo "Disabled $name"
+      move "$path" "$DIS/$name" && echo "Disabled $name"
     else
-      mv "$path" "$PLUG/$name" && echo "Enabled $name"
+      move "$path" "$PLUG/$name" && echo "Enabled $name"
     fi
 
     break
