@@ -1,6 +1,6 @@
 # Decky Plugin Manager
 
-A simple CLI tool to individually enable/disable Decky Loader plugins. Useful when a single broken plugin prevents Decky from loading after SteamOS updates.
+A simple CLI tool to individually enable/disable [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Useful when a single broken plugin prevents Decky from loading after SteamOS updates.
 
 ---
 
@@ -73,9 +73,18 @@ This removes:
 
 ## Install location
 
+Main binary + symlink:
+
 ```bash
 ~/.local/bin/decky-plugin-manager
 ~/.local/bin/dpm
+```
+
+Desktop launchers:
+
+```bash
+~/.local/share/applications/dpm.desktop
+~/.local/share/applications/dpm-uninstall.desktop
 ```
 
 Ensure this directory is in PATH:
@@ -109,18 +118,18 @@ export PATH="$HOME/.local/bin:$PATH"
 
 It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This results in Decky crashing. For users, the only real options to fix this are:
 
-1. going into desktop mode, opening a terminal, and deleting the plugin from `/home/deck/homebrew/plugins/`
+1. Going into desktop mode, opening a terminal, and deleting the plugin dir from `/home/deck/homebrew/plugins/`
 
 2. SSH-ing into the deck, and deleting the plugin
 
-This project aims to make the process of disabling individual Decky plugins a lot easier and quicker.
+This project aims to provide a seamless, quick and easy way of disabling/enabling individual Decky plugins.
 
 ---
 
 ## Notes
 
 * A broken plugin can crash Decky Loader; this tool isolates that issue
-* Designed for Steam Deck / SteamOS but works on any Linux setup with Decky Loader
+* Tested only on Bazzite for Steam Deck. Should also work on SteamOS.
 * Installation script pulls latest version
 
 ---
@@ -129,7 +138,6 @@ This project aims to make the process of disabling individual Decky plugins a lo
 
 If installation fails:
 
-* Verify network access to install URL
 * Ensure `curl` is installed
 
 If plugins do not appear:
