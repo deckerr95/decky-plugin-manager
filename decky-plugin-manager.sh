@@ -21,7 +21,7 @@ GREEN="\e[32m"
 RESET="\e[0m"
 
 if [[ "${1:-}" == "--version" ]]; then
-  echo "$VERSION"
+  echo "$VERSION" | tr -d ' \n'
   exit 0
 fi
 
@@ -152,7 +152,7 @@ while true; do
   select opt in "${options[@]}"; do
     if [[ "$opt" == "Update to latest" ]]; then
       echo "Updating..."
-      if curl -fsSL "$REPO_RAW_URL/install.sh" | env HOME="$BASE" bash; then
+      if curl -fsSL "$REPO_RAW_URL/install.sh" | env -i HOME="$BASE" PATH="$PATH" bash; then
         echo "Update complete. Restarting..."
         sleep 1
         exec "$0" "$@"
