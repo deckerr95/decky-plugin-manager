@@ -106,7 +106,7 @@ install_update() {
   TMP="$(mktemp)"
   
   if curl -fsSL "$REPO_RAW_URL/install.sh" -o "$TMP" &&
-    env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" bash "$TMP" --update; then
+    env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" bash "$TMP" --update --yes; then
     echo
     echo "Update completed successfully."
     echo "Please restart Decky Plugin Manager to use the updated version."
@@ -118,6 +118,7 @@ install_update() {
   rm -f "$TMP"
 
   echo
+  read -rp "Press Enter to continue..."
 }
 
 handle_update_check() {

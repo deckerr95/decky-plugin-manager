@@ -158,6 +158,6 @@ echo
 echo "Run with: $BIN_NAME or dpm, or using the desktop launcher: Decky Plugin Manager (DPM)"
 echo
 
-if [[ -t 0 ]]; then
+if [[ "$UPDATE_MODE" -ne 1 && -t 0 ]]; then
   read -rp "Press Enter to exit..."
 fi
