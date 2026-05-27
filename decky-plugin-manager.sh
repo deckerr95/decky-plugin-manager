@@ -4,7 +4,7 @@ set -e
 unset LD_PRELOAD
 unset LD_LIBRARY_PATH
 
-VERSION="0.5.3"
+VERSION="0.6.0"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.161:8000"
@@ -73,6 +73,24 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   echo "Uninstall complete."
   exit 0
 fi
+
+uninstall_plugin() {
+  local path="$1"
+
+  if [[ ! -e "$path" ]]; then
+    return 1
+  fi
+
+  if [[ "$(stat -c '%U' "$path")" == "root" ]]; then
+    if ! sudo -n true 2>/dev/null; then
+      echo
+      echo "Root privileges required to uninstall plugin..."
+    fi
+    sudo rm -rf "$path"
+  else
+    rm -rf "$path"
+  fi
+}
 
 move() {
   if [[ "$(stat -c '%U' "$1")" == "root" ]]; then
@@ -212,6 +230,58 @@ show_result() {
   read -rp "Press Enter to continue..."
 }
 
+uninstall_plugin_menu_loop() {
+  while true; do
+    clear
+
+    echo "Uninstall Plugins"
+    echo
+    echo "Select a plugin to uninstall."
+    echo
+
+    declare -A map=()
+    declare -a options=()
+
+    options=("Go back")
+    build_plugin_list options map
+
+    echo "Plugins:"
+
+    select opt in "${options[@]}"; do
+
+      if [[ "$opt" == "Go back" ]]; then
+        return
+      fi
+
+      [[ -z "$opt" ]] && break
+
+      IFS='|' read -r path state <<< "${map[$opt]}"
+      name=$(basename "$path")
+
+      clear
+      echo "About to uninstall:"
+      echo
+      echo "- Plugin: $name"
+      echo "- Status: $state"
+      echo "- Path: $path"
+      echo
+      echo "Type 'yes' to confirm [yes/NO]: "
+
+      read -rp "> " confirm
+
+      if [[ "$confirm" != "yes" ]]; then
+        show_result "Uninstall cancelled"
+        break
+      fi
+
+      uninstall_plugin "$path"
+      show_result "$name uninstalled"
+
+      break
+    done
+  done
+}
+
 plugin_menu_loop() {
   while true; do
     clear
@@ -263,8 +333,9 @@ main_menu() {
     echo "Decky Plugin Manager $VERSION"
     echo
     echo "1) Enable/disable plugins"
-    echo "2) Check for update"
-    echo "3) Exit"
+    echo "2) Uninstall plugins"
+    echo "3) Check for update"
+    echo "4) Exit"
     echo
 
     read -rp "Select option: " opt
@@ -274,9 +345,12 @@ main_menu() {
         plugin_menu_loop
         ;;
       2)
-        handle_update_check
+        uninstall_plugin_menu_loop
         ;;
       3)
+        handle_update_check
+        ;;
+      4)
         exit 0
         ;;
       *)
