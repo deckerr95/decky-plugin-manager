@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+unset LD_PRELOAD
+unset LD_LIBRARY_PATH
+
 VERSION="0.5.2"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
@@ -86,7 +89,7 @@ move() {
 check_for_update() {
   local remote
 
-  remote="$(curl -fsSL --connect-timeout 2 --max-time 5 "$VERSION_URL" 2>/dev/null | head -n 1 | tr -d ' \n')"
+  remote="$(curl -fsSL --connect-timeout 10 --max-time 5 "$VERSION_URL" 2>/dev/null | head -n 1 | tr -d ' \n')"
 
   if [[ -z "$remote" ]]; then
     echo "Failed to fetch latest version."
