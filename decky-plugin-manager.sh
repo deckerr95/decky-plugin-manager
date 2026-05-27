@@ -4,7 +4,7 @@ set -e
 unset LD_PRELOAD
 unset LD_LIBRARY_PATH
 
-VERSION="0.5.2"
+VERSION="0.5.3"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.161:8000"
@@ -174,64 +174,116 @@ build_plugin_list() {
   declare -n _options="$1"
   declare -n _map="$2"
 
-  _options=("Exit" "Check for updates")
-
   local f name display
 
+  local all_plugins=()
+
+  # collect enabled
   for f in "$PLUG"/*; do
     [ -e "$f" ] || continue
     name=$(basename "$f")
-    display="$name (Enabled)"
-    _options+=("$display")
-    _map["$display"]="$f|enabled"
+    all_plugins+=("$name|$f|enabled")
   done
 
+  # collect disabled
   for f in "$DIS"/*; do
     [ -e "$f" ] || continue
     name=$(basename "$f")
-    display="$name (Disabled)"
+    all_plugins+=("$name|$f|disabled")
+  done
+
+  # sort alphabetically by plugin name
+  IFS=$'\n' sorted=($(sort <<<"${all_plugins[*]}"))
+  unset IFS
+
+  # rebuild output
+  for entry in "${sorted[@]}"; do
+    IFS='|' read -r name path state <<< "$entry"
+    display="$name ($([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled"))"
     _options+=("$display")
-    _map["$display"]="$f|disabled"
+    _map["$display"]="$path|$state"
+  done
+}
+
+show_result() {
+  clear
+  echo "$1"
+  echo
+  read -rp "Press Enter to continue..."
+}
+
+plugin_menu_loop() {
+  while true; do
+    clear
+
+    echo "Enable/Disable Plugins"
+    echo
+    echo "Select a plugin to toggle its state."
+    echo
+
+    declare -A map=()
+    declare -a options=()
+
+    options=("Go back")
+    build_plugin_list options map
+
+    echo "Plugins:"
+
+    select opt in "${options[@]}"; do
+
+      # Go back to main menu
+      if [[ "$opt" == "Go back" ]]; then
+        return
+      fi
+
+      # invalid selection
+      [[ -z "$opt" ]] && break
+
+      IFS='|' read -r path state <<< "${map[$opt]}"
+      name=$(basename "$path")
+
+      if [ "$state" = "enabled" ]; then
+        move "$path" "$DIS/$name"
+        show_result "$name disabled"
+      else
+        move "$path" "$PLUG/$name"
+        show_result "$name enabled"
+      fi
+
+      # IMPORTANT: break select AND restart loop to refresh UI
+      break
+    done
+  done
+}
+
+main_menu() {
+  while true; do
+    clear
+
+    echo "Decky Plugin Manager $VERSION"
+    echo
+    echo "1) Enable/disable plugins"
+    echo "2) Check for update"
+    echo "3) Exit"
+    echo
+
+    read -rp "Select option: " opt
+
+    case "$opt" in
+      1)
+        plugin_menu_loop
+        ;;
+      2)
+        handle_update_check
+        ;;
+      3)
+        exit 0
+        ;;
+      *)
+        ;;
+    esac
   done
 }
 
 init_paths
-
-while true; do
-  clear
-
-  TITLE="Decky Plugin Manager $VERSION"
-  echo -e "$TITLE"
-  
-  echo "Select a plugin to enable/disable."
-  echo "Changes require restarting Steam/system to take effect."
-  echo
-
-  declare -A map=()
-  declare -a options=()
-
-  build_plugin_list options map
-
-  echo "Plugins:"
-  select opt in "${options[@]}"; do
-    if [[ "$opt" == "Check for updates" ]]; then
-      handle_update_check
-      break
-    fi
-    [ "$opt" = "Exit" ] && exit 0
-    [ -z "$opt" ] && break
-
-    IFS='|' read -r path state <<< "${map[$opt]}"
-    name=$(basename "$path")
-
-    if [ "$state" = "enabled" ]; then
-      move "$path" "$DIS/$name" && echo "Disabled $name"
-    else
-      move "$path" "$PLUG/$name" && echo "Enabled $name"
-    fi
-
-    echo
-    read -rp "Press Enter to continue..."
-    break
-  done
-done
+main_menu
