@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION="0.5.1"
+VERSION="0.5.2"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.161:8000"
@@ -118,7 +118,6 @@ install_update() {
   rm -f "$TMP"
 
   echo
-  read -rp "Press Enter to continue..."
 }
 
 handle_update_check() {
