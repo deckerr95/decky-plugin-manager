@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION="0.5.0"
+VERSION="0.5.1"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 REPO_RAW_URL="http://192.168.1.161:8000"
@@ -103,11 +103,10 @@ check_for_update() {
 }
 
 install_update() {
-  echo
-  echo "Updating Decky Plugin Manager..."
-  echo
-
-  if curl -fsSL "$REPO_RAW_URL/install.sh" | env -i HOME="$BASE" PATH="$PATH" bash; then
+  TMP="$(mktemp)"
+  
+  if curl -fsSL "$REPO_RAW_URL/install.sh" -o "$TMP" &&
+    env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" bash "$TMP" --update; then
     echo
     echo "Update completed successfully."
     echo "Please restart Decky Plugin Manager to use the updated version."
@@ -115,6 +114,8 @@ install_update() {
     echo
     echo "Update failed."
   fi
+  
+  rm -f "$TMP"
 
   echo
   read -rp "Press Enter to continue..."

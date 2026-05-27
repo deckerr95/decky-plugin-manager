@@ -6,6 +6,32 @@ set -euo pipefail
 REPO_RAW_URL="http://192.168.1.161:8000"
 VERSION_URL="$REPO_RAW_URL/version"
 
+AUTO_YES=0
+UPDATE_MODE=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --yes)
+      AUTO_YES=1
+      ;;
+    --update)
+      UPDATE_MODE=1
+      AUTO_YES=1
+      ;;
+  esac
+done
+
+confirm() {
+  local prompt="$1"
+
+  if [[ "$AUTO_YES" -eq 1 ]]; then
+    return 0
+  fi
+
+  read -rp "$prompt" confirm
+  [[ "$confirm" =~ ^[Yy]$ ]]
+}
+
 # fetch remote version
 REMOTE_VERSION="$(curl -fsSL --max-time 5 "$VERSION_URL" | head -n 1 | tr -d ' \n')"
 if [[ -z "$REMOTE_VERSION" ]]; then
@@ -44,11 +70,10 @@ else
 
   if [[ -n "$CURRENT_VERSION" && "$CURRENT_VERSION" == "$REMOTE_VERSION" ]]; then
     echo "Already up to date."
-    read -rp "Reinstall anyway? [y/N]: " force
-    [[ "$force" =~ ^[Yy]$ ]] || {
+    if ! confirm "Reinstall anyway? [y/N]: "; then
       echo "Aborted."
-      exit 0
-    }
+      exit 1
+    fi
   fi
 
   # detect downgrade
@@ -58,11 +83,12 @@ else
 fi
 
 echo
-read -rp "Proceed? [y/N]: " confirm
-[[ "$confirm" =~ ^[Yy]$ ]] || {
+
+if ! confirm "Proceed? [y/N]: "; then
   echo "Aborted."
-  exit 0
-}
+  exit 1
+fi
+
 echo
 
 # download
