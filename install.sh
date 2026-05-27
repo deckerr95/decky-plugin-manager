@@ -39,6 +39,8 @@ if [[ -z "$REMOTE_VERSION" ]]; then
   exit 1
 fi
 
+REINSTALL_CONFIRMED=0
+
 USER_NAME="${SUDO_USER:-$USER}"
 USER_HOME="$(eval echo ~$USER_NAME)"
 DESKTOP_FILE="$USER_HOME/.local/share/applications/dpm.desktop"
@@ -70,9 +72,12 @@ else
 
   if [[ -n "$CURRENT_VERSION" && "$CURRENT_VERSION" == "$REMOTE_VERSION" ]]; then
     echo "Already up to date."
-    if ! confirm "Reinstall anyway? [y/N]: "; then
+    
+    if confirm "Reinstall anyway? [y/N]: "; then
+      REINSTALL_CONFIRMED=1
+    else
       echo "Aborted."
-      exit 1
+      exit 0
     fi
   fi
 
@@ -84,9 +89,13 @@ fi
 
 echo
 
-if ! confirm "Proceed? [y/N]: "; then
-  echo "Aborted."
-  exit 1
+if [[ "$REINSTALL_CONFIRMED" -eq 1 ]]; then
+  :
+else
+  if ! confirm "Proceed? [y/N]: "; then
+    echo "Aborted."
+    exit 1
+  fi
 fi
 
 echo
