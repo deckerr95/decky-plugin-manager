@@ -7,18 +7,15 @@ VERSION="0.5.0"
 REPO_RAW_URL="http://192.168.1.118:8000"
 VERSION_URL="$REPO_RAW_URL/version"
 
-UPDATE_AVAILABLE=0
-REMOTE_VERSION=""
-UPDATE_CHECK_DONE=0
-TMP_VERSION_FILE="$HOME/.cache/dpm/version"
+init_paths() {
+  USER_NAME="${SUDO_USER:-$USER}"
+  BASE="$(eval echo ~${SUDO_USER:-$USER})"
+  PLUG="$BASE/homebrew/plugins"
+  DIS="$BASE/homebrew.disabled"
 
-mkdir -p "$(dirname "$TMP_VERSION_FILE")"
-if [[ -f "$TMP_VERSION_FILE" ]]; then
-  rm -f "$TMP_VERSION_FILE"
-fi
-
-GREEN="\e[32m"
-RESET="\e[0m"
+  mkdir -p "$PLUG"
+  mkdir -p "$DIS"
+}
 
 if [[ "${1:-}" == "--version" ]]; then
   echo "$VERSION" | tr -d ' \n'
@@ -74,15 +71,6 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   exit 0
 fi
 
-(
-  curl -fsSL \
-    --connect-timeout 2 \
-    --max-time 5 \
-    "$VERSION_URL" -o "$TMP_VERSION_FILE" \
-    >/dev/null 2>&1 || true
-) </dev/null &
-disown
-
 move() {
   if [[ "$(stat -c '%U' "$1")" == "root" ]]; then
     if ! sudo -n true 2>/dev/null; then
@@ -95,33 +83,120 @@ move() {
   fi
 }
 
-USER_NAME="${SUDO_USER:-$USER}"
-BASE="$(eval echo ~${SUDO_USER:-$USER})"
-PLUG="$BASE/homebrew/plugins"
-DIS="$BASE/homebrew.disabled"
+check_for_update() {
+  local remote
 
-mkdir -p "$PLUG"
-mkdir -p "$DIS"
+  remote="$(curl -fsSL --connect-timeout 2 --max-time 5 "$VERSION_URL" 2>/dev/null | head -n 1 | tr -d ' \n')"
+
+  if [[ -z "$remote" ]]; then
+    echo "Failed to fetch latest version."
+    return 1
+  fi
+  
+  if [[ ! "$remote" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+    echo "Remote version format is invalid."
+    return 1
+  fi
+
+  REMOTE_VERSION="$remote"
+  return 0
+}
+
+install_update() {
+  echo
+  echo "Updating Decky Plugin Manager..."
+  echo
+
+  if curl -fsSL "$REPO_RAW_URL/install.sh" | env -i HOME="$BASE" PATH="$PATH" bash; then
+    echo
+    echo "Update completed successfully."
+    echo "Please restart Decky Plugin Manager to use the updated version."
+  else
+    echo
+    echo "Update failed."
+  fi
+
+  echo
+  read -rp "Press Enter to continue..."
+}
+
+handle_update_check() {
+  clear
+  echo "Checking for updates..."
+  echo
+
+  REMOTE_VERSION=""
+
+  if check_for_update; then
+    echo "Current version: $VERSION"
+    echo "Latest version: $REMOTE_VERSION"
+    echo
+  else
+    echo "Failed to fetch latest version."
+    echo
+    read -rp "Press Enter to continue..."
+    return
+  fi
+
+  if [[ "$REMOTE_VERSION" != "$VERSION" ]]; then
+    echo "An update is available."
+    echo
+    echo "1) Update now"
+    echo "2) Back"
+    echo
+
+    read -rp "Select option: " uopt
+
+    case "$uopt" in
+      1)
+        install_update
+        return
+        ;;
+
+      2|"")
+        return
+        ;;
+    esac
+
+  else
+    echo "You are already up to date."
+    echo
+    read -rp "Press Enter to continue..."
+    return
+  fi
+}
+
+build_plugin_list() {
+  declare -n _options="$1"
+  declare -n _map="$2"
+
+  _options=("Exit" "Check for updates")
+
+  local f name display
+
+  for f in "$PLUG"/*; do
+    [ -e "$f" ] || continue
+    name=$(basename "$f")
+    display="$name (Enabled)"
+    _options+=("$display")
+    _map["$display"]="$f|enabled"
+  done
+
+  for f in "$DIS"/*; do
+    [ -e "$f" ] || continue
+    name=$(basename "$f")
+    display="$name (Disabled)"
+    _options+=("$display")
+    _map["$display"]="$f|disabled"
+  done
+}
+
+init_paths
 
 while true; do
   clear
-  
-  if [[ -f "$TMP_VERSION_FILE" && $UPDATE_CHECK_DONE -eq 0 ]]; then
-    REMOTE_VERSION="$(tr -d ' \n' < "$TMP_VERSION_FILE")"
-
-    if [[ -n "$REMOTE_VERSION" ]]; then
-      if [[ "$(printf '%s\n' "$VERSION" "$REMOTE_VERSION" | sort -V | tail -n1)" != "$VERSION" ]]; then
-        UPDATE_AVAILABLE=1
-      fi
-    fi
-
-    UPDATE_CHECK_DONE=1
-  fi
 
   TITLE="Decky Plugin Manager $VERSION"
-  if [[ $UPDATE_AVAILABLE -eq 1 && -n "$REMOTE_VERSION" ]]; then
-    TITLE="$TITLE - ${GREEN}New Update: $REMOTE_VERSION${RESET}"
-  fi
   echo -e "$TITLE"
   
   echo "Select a plugin to enable/disable."
@@ -129,37 +204,14 @@ while true; do
   echo
 
   declare -A map=()
-  options=("Exit")
-  [[ $UPDATE_AVAILABLE -eq 1 ]] && options+=("Update to latest")
+  declare -a options=()
 
-  for f in "$PLUG"/*; do
-    [ -e "$f" ] || continue
-    name=$(basename "$f")
-    display="$name (Enabled)"
-    options+=("$display")
-    map["$display"]="$f|enabled"
-  done
-
-  for f in "$DIS"/*; do
-    [ -e "$f" ] || continue
-    name=$(basename "$f")
-    display="$name (Disabled)"
-    options+=("$display")
-    map["$display"]="$f|disabled"
-  done
+  build_plugin_list options map
 
   echo "Plugins:"
   select opt in "${options[@]}"; do
-    if [[ "$opt" == "Update to latest" ]]; then
-      echo "Updating..."
-      if curl -fsSL "$REPO_RAW_URL/install.sh" | env -i HOME="$BASE" PATH="$PATH" bash; then
-        echo "Update complete. Restarting..."
-        sleep 1
-        exec "$0" "$@"
-      else
-        echo "Update failed."
-        sleep 3
-      fi
+    if [[ "$opt" == "Check for updates" ]]; then
+      handle_update_check
       break
     fi
     [ "$opt" = "Exit" ] && exit 0
@@ -174,8 +226,8 @@ while true; do
       move "$path" "$PLUG/$name" && echo "Enabled $name"
     fi
 
+    echo
+    read -rp "Press Enter to continue..."
     break
   done
-
-  sleep 3
 done
