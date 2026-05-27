@@ -10,6 +10,52 @@ VERSION="0.6.0"
 REPO_RAW_URL="http://192.168.1.161:8000"
 VERSION_URL="$REPO_RAW_URL/version"
 
+# UI backend detection
+if command -v whiptail >/dev/null 2>&1; then
+  UI_MODE="whiptail"
+else
+  UI_MODE="cli"
+fi
+
+ui_menu() {
+  if [[ "$UI_MODE" == "whiptail" ]]; then
+    whiptail --title "$1" \
+      --menu "$2" 15 60 "$3" \
+      "${@:4}" \
+      3>&1 1>&2 2>&3
+  else
+    shift 3
+    echo "$1"
+    shift
+
+    local items=("$@")
+    local i=1
+
+    local labels=()
+    local descriptions=()
+
+    for ((j=0; j<${#items[@]}; j+=2)); do
+      labels+=("${items[j]}")
+      descriptions+=("${items[j+1]}")
+    done
+
+    local i=1
+    for ((j=0; j<${#labels[@]}; j++)); do
+      echo "$i) ${labels[j]} - ${descriptions[j]}"
+      ((i++))
+    done
+
+    read -rp "Select option: " opt
+
+    # convert numeric selection safely
+    if [[ "$opt" =~ ^[0-9]+$ ]]; then
+      opt="${labels[$((opt-1))]}"
+    fi
+
+    echo "$opt"
+  fi
+}
+
 init_paths() {
   USER_NAME="${SUDO_USER:-$USER}"
   BASE="$(eval echo ~${SUDO_USER:-$USER})"
@@ -18,6 +64,22 @@ init_paths() {
 
   mkdir -p "$PLUG"
   mkdir -p "$DIS"
+}
+
+ui_confirm() {
+  local title="$1"
+  local text="$2"
+
+  if [[ "$UI_MODE" == "whiptail" ]]; then
+    whiptail --title "$title" --yesno "$text" 10 60 \
+      3>&1 1>&2 2>&3
+    return $?
+  else
+    echo
+    echo "$text [y/N]"
+    read -r ans
+    [[ "$ans" == "y" || "$ans" == "yes" ]]
+  fi
 }
 
 if [[ "${1:-}" == "--version" ]]; then
@@ -143,48 +205,44 @@ install_update() {
 }
 
 handle_update_check() {
-  clear
-  echo "Checking for updates..."
-  echo
-
   REMOTE_VERSION=""
 
-  if check_for_update; then
-    echo "Current version: $VERSION"
-    echo "Latest version: $REMOTE_VERSION"
-    echo
-  else
-    echo "Failed to fetch latest version."
-    echo
-    read -rp "Press Enter to continue..."
+  if ! check_for_update; then
+    if [[ "$UI_MODE" == "whiptail" ]]; then
+      whiptail --title "Update check" \
+        --msgbox "Failed to fetch latest version." 10 60
+    else
+      echo "Failed to fetch latest version."
+      read -rp "Press Enter to continue..."
+    fi
     return
   fi
 
-  if [[ "$REMOTE_VERSION" != "$VERSION" ]]; then
-    echo "An update is available."
-    echo
-    echo "1) Update now"
-    echo "2) Back"
-    echo
-
-    read -rp "Select option: " uopt
-
-    case "$uopt" in
-      1)
-        install_update
-        return
-        ;;
-
-      2|"")
-        return
-        ;;
-    esac
-
-  else
-    echo "You are already up to date."
-    echo
-    read -rp "Press Enter to continue..."
+  if [[ "$REMOTE_VERSION" == "$VERSION" ]]; then
+    if [[ "$UI_MODE" == "whiptail" ]]; then
+      whiptail --title "Update check" \
+        --msgbox "You are already up to date." 10 60
+    else
+      echo "You are already up to date."
+      read -rp "Press Enter to continue..."
+    fi
     return
+  fi
+
+  if [[ "$UI_MODE" == "whiptail" ]]; then
+    whiptail --title "Update available" \
+      --yesno "Update available.\n\nCurrent: $VERSION\nLatest: $REMOTE_VERSION\n\nUpdate now?" 12 60
+
+    if [[ $? -eq 0 ]]; then
+      install_update
+    fi
+  else
+    echo "Update available."
+    echo "Current: $VERSION"
+    echo "Latest: $REMOTE_VERSION"
+    echo
+    read -rp "Update now? [y/N]: " ans
+    [[ "$ans" == "y" || "$ans" == "yes" ]] && install_update
   fi
 }
 
@@ -234,51 +292,38 @@ uninstall_plugin_menu_loop() {
   while true; do
     clear
 
-    echo "Uninstall Plugins"
-    echo
-    echo "Select a plugin to uninstall."
-    echo
-
     declare -A map=()
     declare -a options=()
 
-    options=("Go back")
+    options+=("Go back" "Return to main menu")
     build_plugin_list options map
 
-    echo "Plugins:"
+    opt=$(ui_menu \
+      "Uninstall Plugins" \
+      "Select a plugin to uninstall" \
+      20 \
+      "${options[@]}"
+    )
 
-    select opt in "${options[@]}"; do
+    # CLI fallback
+    if [[ "$UI_MODE" == "cli" ]]; then
+      [[ "$opt" =~ ^[0-9]+$ ]] || continue
+      opt="${options[$((opt-1))]}"
+    fi
 
-      if [[ "$opt" == "Go back" ]]; then
-        return
-      fi
+    [[ "$opt" == "Go back" ]] && return
+    [[ -z "$opt" ]] && continue
 
-      [[ -z "$opt" ]] && break
+    IFS='|' read -r path state <<< "${map[$opt]}"
+    name=$(basename "$path")
 
-      IFS='|' read -r path state <<< "${map[$opt]}"
-      name=$(basename "$path")
+    if ! ui_confirm "Confirm uninstall" "Uninstall $name?"; then
+      show_result "Uninstall cancelled"
+      continue
+    fi
 
-      clear
-      echo "About to uninstall:"
-      echo
-      echo "- Plugin: $name"
-      echo "- Status: $state"
-      echo "- Path: $path"
-      echo
-      echo "Type 'yes' to confirm [yes/NO]: "
-
-      read -rp "> " confirm
-
-      if [[ "$confirm" != "yes" ]]; then
-        show_result "Uninstall cancelled"
-        break
-      fi
-
-      uninstall_plugin "$path"
-      show_result "$name uninstalled"
-
-      break
-    done
+    uninstall_plugin "$path"
+    show_result "$name uninstalled"
   done
 }
 
@@ -286,76 +331,68 @@ plugin_menu_loop() {
   while true; do
     clear
 
-    echo "Enable/Disable Plugins"
-    echo
-    echo "Select a plugin to toggle its state."
-    echo
-
     declare -A map=()
     declare -a options=()
 
-    options=("Go back")
+    options+=("Go back" "Return to main menu")
     build_plugin_list options map
 
-    echo "Plugins:"
+    opt=$(ui_menu \
+      "Plugins" \
+      "Enable / disable plugins" \
+      20 \
+      "${options[@]}"
+    )
 
-    select opt in "${options[@]}"; do
+    # CLI fallback: convert numeric input to option
+    if [[ "$UI_MODE" == "cli" ]]; then
+      [[ "$opt" =~ ^[0-9]+$ ]] || continue
+      opt="${options[$((opt-1))]}"
+    fi
 
-      # Go back to main menu
-      if [[ "$opt" == "Go back" ]]; then
-        return
-      fi
+    [[ "$opt" == "Go back" ]] && return
+    [[ -z "$opt" ]] && continue
 
-      # invalid selection
-      [[ -z "$opt" ]] && break
+    IFS='|' read -r path state <<< "${map[$opt]}"
+    name=$(basename "$path")
 
-      IFS='|' read -r path state <<< "${map[$opt]}"
-      name=$(basename "$path")
-
-      if [ "$state" = "enabled" ]; then
-        move "$path" "$DIS/$name"
-        show_result "$name disabled"
-      else
-        move "$path" "$PLUG/$name"
-        show_result "$name enabled"
-      fi
-
-      # IMPORTANT: break select AND restart loop to refresh UI
-      break
-    done
+    if [[ "$state" == "enabled" ]]; then
+      move "$path" "$DIS/$name"
+      show_result "$name disabled"
+    else
+      move "$path" "$PLUG/$name"
+      show_result "$name enabled"
+    fi
   done
 }
 
 main_menu() {
   while true; do
-    clear
 
-    echo "Decky Plugin Manager $VERSION"
-    echo
-    echo "1) Enable/disable plugins"
-    echo "2) Uninstall plugins"
-    echo "3) Check for update"
-    echo "4) Exit"
-    echo
+    opt=$(ui_menu \
+      "Decky Plugin Manager $VERSION" \
+      "Select an option" \
+      4 \
+      "1" "Enable/disable plugins" \
+      "2" "Uninstall plugins" \
+      "3" "Check for update" \
+      "4" "Exit"
+    )
 
-    read -rp "Select option: " opt
+    if [[ "$UI_MODE" == "whiptail" ]]; then
+      exit_status=$?
+      if [[ $exit_status -ne 0 ]]; then
+        exit 0
+      fi
+    fi
 
     case "$opt" in
-      1)
-        plugin_menu_loop
-        ;;
-      2)
-        uninstall_plugin_menu_loop
-        ;;
-      3)
-        handle_update_check
-        ;;
-      4)
-        exit 0
-        ;;
-      *)
-        ;;
+      1) plugin_menu_loop ;;
+      2) uninstall_plugin_menu_loop ;;
+      3) handle_update_check ;;
+      4) exit 0 ;;
     esac
+
   done
 }
 
