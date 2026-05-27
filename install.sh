@@ -111,32 +111,37 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
 fi
 
 # Main launcher
-cat > "$DESKTOP_FILE" <<EOF
+tmpfile="$(mktemp)"
+cat > "$tmpfile" <<EOF
 [Desktop Entry]
 Name=Decky Plugin Manager (DPM)
 Comment=Enable/disable Decky Loader plugins
-Exec=xdg-terminal-exec bash -c "$SYMLINK"
-Terminal=true
+Exec=konsole -e bash -lc "$SYMLINK"
+Terminal=false
 Type=Application
 Icon=system-run
 Categories=Utility;
 StartupNotify=false
 EOF
+mv -f "$tmpfile" "$DESKTOP_FILE"
 chmod +x "$DESKTOP_FILE"
 
 # Uninstall launcher
-cat > "$UNINSTALL_DESKTOP_FILE" <<EOF
+tmpfile="$(mktemp)"
+cat > "$tmpfile" <<EOF
 [Desktop Entry]
 Name=Decky Plugin Manager (Uninstall)
 Comment=Remove Decky Plugin Manager
-Exec=xdg-terminal-exec bash -c "$SYMLINK --uninstall"
-Terminal=true
+Exec=konsole -e bash -lc "$SYMLINK --uninstall"
+Terminal=false
 Type=Application
 Icon=edit-delete
 Categories=Utility;
 StartupNotify=false
 EOF
+mv -f "$tmpfile" "$UNINSTALL_DESKTOP_FILE"
 chmod +x "$UNINSTALL_DESKTOP_FILE"
+
 
 INSTALLED_VERSION="$("$TARGET" --version 2>/dev/null | tr -d ' \n')"
 
@@ -157,6 +162,13 @@ echo " - (use 'Add to Steam' to run in Gaming Mode)"
 echo
 echo "Run with: $BIN_NAME or dpm, or using the desktop launcher: Decky Plugin Manager (DPM)"
 echo
+
+# Refresh KDE app cache to make it pick up new desktop launchers
+if command -v kbuildsycoca5 >/dev/null 2>&1; then
+  kbuildsycoca5 --noincremental >/dev/null 2>&1 || true
+elif command -v kbuildsycoca6 >/dev/null 2>&1; then
+  kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
+fi
 
 if [[ "$UPDATE_MODE" -ne 1 && -t 0 ]]; then
   read -rp "Press Enter to exit..."
