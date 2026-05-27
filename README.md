@@ -20,7 +20,7 @@ A simple CLI tool to individually enable/disable [Decky Loader](https://github.c
 
 Download and run:
 
-[Install Decky Plugin Manager](http://192.168.1.118:8000/install-decky-plugin-manager.desktop)
+[Install Decky Plugin Manager](http://192.168.1.161:8000/install-decky-plugin-manager.desktop)
 
 This provides a one-click installer usable from Desktop Mode.
 

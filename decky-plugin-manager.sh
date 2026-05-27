@@ -4,7 +4,7 @@ set -e
 VERSION="0.5.0"
 
 # REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
-REPO_RAW_URL="http://192.168.1.118:8000"
+REPO_RAW_URL="http://192.168.1.161:8000"
 VERSION_URL="$REPO_RAW_URL/version"
 
 init_paths() {
