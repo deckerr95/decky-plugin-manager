@@ -366,12 +366,20 @@ plugin_menu_loop() {
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       local choice
 
+      local args=("Go back" "Return to main menu")
+
+      for entry in "${sorted[@]}"; do
+        IFS='|' read -r name path state <<< "$entry"
+        status="$([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled")"
+        args+=("$name" "$status")
+        _map["$name"]="$path|$state"
+      done
+
       choice=$(whiptail \
         --title "Enable/Disable Plugins" \
         --menu "Select a plugin to toggle its state:" \
         20 70 10 \
-        "Go back" "Return to main menu" \
-        "${options[@]}" \
+        "${args[@]}" \
         3>&1 1>&2 2>&3)
 
       [[ $? -ne 0 ]] && return
