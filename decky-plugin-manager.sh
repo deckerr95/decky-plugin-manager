@@ -74,6 +74,23 @@ init_paths() {
   mkdir -p "$DIS"
 }
 
+SUDO_PASS=""
+
+ensure_sudo() {
+  if sudo -n true 2>/dev/null; then
+    return 0
+  fi
+
+  SUDO_PASS=$(whiptail --title "Authentication Required" \
+    --passwordbox "Root access required to continue:" 10 60 3>&1 1>&2 2>&3)
+
+  if [[ -z "$SUDO_PASS" ]]; then
+    return 1
+  fi
+
+  echo "$SUDO_PASS" | sudo -S -v >/dev/null 2>&1
+}
+
 if [[ "${1:-}" == "--version" ]]; then
   echo "$VERSION" | tr -d ' \n'
   exit 0
@@ -136,25 +153,36 @@ uninstall_plugin() {
   fi
 
   if [[ "$(stat -c '%U' "$path")" == "root" ]]; then
-    if ! sudo -n true 2>/dev/null; then
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      ensure_sudo || return 1
+    else
       echo
       echo "Root privileges required to uninstall plugin..."
+      sudo rm -rf "$path"
+      return
     fi
-    sudo rm -rf "$path"
+
+    echo "$SUDO_PASS" | sudo -S rm -rf "$path"
   else
     rm -rf "$path"
   fi
 }
 
 move() {
-  if [[ "$(stat -c '%U' "$1")" == "root" ]]; then
-    if ! sudo -n true 2>/dev/null; then
+  local src="$1"
+  local dst="$2"
+
+  if [[ "$(stat -c '%U' "$src")" == "root" ]]; then
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      ensure_sudo || return 1
+      echo "$SUDO_PASS" | sudo -S mv "$src" "$dst"
+    else
       echo
       echo "The plugin's directory is owned by root. Please provide root password to continue: "
+      sudo mv "$src" "$dst"
     fi
-    sudo mv "$1" "$2"
   else
-    mv "$1" "$2"
+    mv "$src" "$dst"
   fi
 }
 
