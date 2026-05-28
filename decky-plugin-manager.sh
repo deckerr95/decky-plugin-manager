@@ -366,7 +366,7 @@ plugin_menu_loop() {
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       local choice
 
-      local args=("Go back" "Return to main menu")
+      local args=()
 
       for entry in "${sorted[@]}"; do
         IFS='|' read -r name path state <<< "$entry"
