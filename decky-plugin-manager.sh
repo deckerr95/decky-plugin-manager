@@ -196,24 +196,47 @@ install_update() {
 }
 
 handle_update_check() {
-  clear
+  local text
+  local uopt
+
+  [[ "$HAS_WHIPTAIL" -eq 0 ]] && clear
+
   echo "Checking for updates..."
   echo
 
   REMOTE_VERSION=""
 
-  if check_for_update; then
-    echo "Current version: $VERSION"
-    echo "Latest version: $REMOTE_VERSION"
-    echo
-  else
-    echo "Failed to fetch latest version."
-    echo
-    read -rp "Press Enter to continue..."
+  if ! check_for_update; then
+    msgbox "Failed to fetch latest version."
     return
   fi
 
-  if [[ "$REMOTE_VERSION" != "$VERSION" ]]; then
+  text="Current version: $VERSION
+
+Latest version: $REMOTE_VERSION"
+
+  if [[ "$REMOTE_VERSION" == "$VERSION" ]]; then
+    msgbox "$text
+
+You are already up to date."
+    return
+  fi
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    uopt=$(whiptail \
+      --title "Update Available" \
+      --menu "$text
+
+An update is available." \
+      16 70 5 \
+      "1" "Update now" \
+      "2" "Back" \
+      3>&1 1>&2 2>&3)
+
+    [[ $? -ne 0 ]] && return
+  else
+    echo "$text"
+    echo
     echo "An update is available."
     echo
     echo "1) Update now"
@@ -221,24 +244,13 @@ handle_update_check() {
     echo
 
     read -rp "Select option: " uopt
-
-    case "$uopt" in
-      1)
-        install_update
-        return
-        ;;
-
-      2|"")
-        return
-        ;;
-    esac
-
-  else
-    echo "You are already up to date."
-    echo
-    read -rp "Press Enter to continue..."
-    return
   fi
+
+  case "$uopt" in
+    1)
+      install_update
+      ;;
+  esac
 }
 
 build_plugin_list() {
