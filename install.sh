@@ -9,6 +9,16 @@ VERSION_URL="$REPO_RAW_URL/version"
 AUTO_YES=0
 UPDATE_MODE=0
 
+HAS_WHIPTAIL=0
+
+is_interactive() {
+  [[ -t 0 && -t 1 ]]
+}
+
+if command -v whiptail >/dev/null 2>&1 && is_interactive; then
+  HAS_WHIPTAIL=1
+fi
+
 for arg in "$@"; do
   case "$arg" in
     --yes)
@@ -21,11 +31,45 @@ for arg in "$@"; do
   esac
 done
 
-confirm() {
+ui_info() {
+  local message="$1"
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    whiptail \
+      --title "Decky Plugin Manager" \
+      --msgbox "$message" \
+      12 70
+  else
+    echo "$message"
+  fi
+}
+
+ui_error() {
+  local message="$1"
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    whiptail \
+      --title "Decky Plugin Manager - Error" \
+      --msgbox "$message" \
+      12 70
+  else
+    echo "ERROR: $message" >&2
+  fi
+}
+
+ui_confirm() {
   local prompt="$1"
 
   if [[ "$AUTO_YES" -eq 1 ]]; then
     return 0
+  fi
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    whiptail \
+      --title "Decky Plugin Manager" \
+      --yesno "$prompt" \
+      12 70
+    return $?
   fi
 
   read -rp "$prompt" confirm
@@ -35,7 +79,7 @@ confirm() {
 # fetch remote version
 REMOTE_VERSION="$(curl -fsSL --max-time 5 "$VERSION_URL" | head -n 1 | tr -d ' \n')"
 if [[ -z "$REMOTE_VERSION" ]]; then
-  echo "Failed to fetch remote version."
+  ui_error "Failed to fetch remote version."
   exit 1
 fi
 
@@ -63,47 +107,57 @@ fi
 mkdir -p "$INSTALL_DIR"
 
 if [[ -z "$CURRENT_VERSION" ]]; then
-  echo "Installing Decky Plugin Manager"
-  echo "Version: $REMOTE_VERSION"
+  INSTALL_MESSAGE=$(
+    cat <<EOF
+Installing Decky Plugin Manager
+
+Version: $REMOTE_VERSION
+EOF
+  )
+
+  ui_info "$INSTALL_MESSAGE"
 else
-  echo "Updating Decky Plugin Manager"
-  echo "Current version: $CURRENT_VERSION"
-  echo "New version: $REMOTE_VERSION"
+  UPDATE_MESSAGE=$(
+    cat <<EOF
+Updating Decky Plugin Manager
+
+Current version: $CURRENT_VERSION
+New version: $REMOTE_VERSION
+EOF
+  )
+
+  ui_info "$UPDATE_MESSAGE"
 
   if [[ -n "$CURRENT_VERSION" && "$CURRENT_VERSION" == "$REMOTE_VERSION" ]]; then
-    echo "Already up to date."
-    
-    if confirm "Reinstall anyway? [y/N]: "; then
+    ui_info "Already up to date."
+
+    if ui_confirm "Reinstall anyway?"; then
       REINSTALL_CONFIRMED=1
     else
-      echo "Aborted."
+      ui_info "Aborted."
       exit 0
     fi
   fi
 
   # detect downgrade
   if [[ "$(printf '%s\n' "$CURRENT_VERSION" "$REMOTE_VERSION" | sort -V | head -n1)" != "$CURRENT_VERSION" ]]; then
-    echo "Warning: this will downgrade the installed version."
+    ui_info "Warning: this will downgrade the installed version."
   fi
 fi
-
-echo
 
 if [[ "$REINSTALL_CONFIRMED" -eq 1 ]]; then
   :
 else
-  if ! confirm "Proceed? [y/N]: "; then
-    echo "Aborted."
+  if ! ui_confirm "Proceed with installation?"; then
+    ui_info "Aborted."
     exit 1
   fi
 fi
 
-echo
-
 # download
 TMP="$(mktemp)"
 if ! curl -fsSL "$REPO_RAW_URL/decky-plugin-manager.sh" -o "$TMP"; then
-  echo "Failed to download installer payload."
+  ui_error "Failed to download installer payload."
   exit 1
 fi
 
@@ -116,7 +170,7 @@ ln -sf "$TARGET" "$SYMLINK"
 
 # ensure PATH hint (no sudo needed for user-local install)
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-  echo "Note: add to PATH if needed: export PATH=\"$INSTALL_DIR:\$PATH\""
+  ui_info "Note: add to PATH if needed: export PATH=\"$INSTALL_DIR:\$PATH\""
 fi
 
 # Main launcher
@@ -154,29 +208,67 @@ chmod +x "$UNINSTALL_DESKTOP_FILE"
 
 INSTALLED_VERSION="$("$TARGET" --version 2>/dev/null | tr -d ' \n')"
 
-echo "Installed: $TARGET"
-echo "Installed version: $INSTALLED_VERSION"
+FINAL_MESSAGE=$(
+  cat <<EOF
+Installed: $TARGET
 
+Installed version: $INSTALLED_VERSION
+
+$(
 if [[ "$INSTALLED_VERSION" == "$REMOTE_VERSION" ]]; then
   echo "Verification: OK"
 else
   echo "Verification: FAILED (expected $REMOTE_VERSION)"
 fi
-echo "Alias: $SYMLINK"
-echo
-echo "Desktop entries created:"
-echo " - $DESKTOP_FILE"
-echo " - $UNINSTALL_DESKTOP_FILE"
-echo " - (use 'Add to Steam' to run in Gaming Mode)"
-echo
-echo "Run with: $BIN_NAME or dpm, or using the desktop launcher: Decky Plugin Manager (DPM)"
-echo
+)
+
+Alias: $SYMLINK
+
+Desktop entries created:
+ - $DESKTOP_FILE
+ - $UNINSTALL_DESKTOP_FILE
+ - (use 'Add to Steam' to run in Gaming Mode)
+
+Run with:
+ - $BIN_NAME
+ - dpm
+ - Decky Plugin Manager (DPM)
+EOF
+)
+
+if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+  tmpfile="$(mktemp)"
+  printf "%s\n" "$FINAL_MESSAGE" > "$tmpfile"
+
+  LINES=$(tput lines 2>/dev/null || echo 40)
+  COLS=$(tput cols 2>/dev/null || echo 100)
+
+  H=$((LINES - 6))
+  W=$((COLS - 10))
+
+  (( H < 20 )) && H=20
+  (( W < 70 )) && W=70
+
+  whiptail \
+    --title "Decky Plugin Manager" \
+    --scrolltext \
+    --textbox "$tmpfile" \
+    "$H" "$W"
+
+  rm -f "$tmpfile"
+else
+  ui_info "$FINAL_MESSAGE"
+fi
 
 # Refresh KDE app cache to make it pick up new desktop launchers
 if command -v kbuildsycoca5 >/dev/null 2>&1; then
   kbuildsycoca5 --noincremental >/dev/null 2>&1 || true
 elif command -v kbuildsycoca6 >/dev/null 2>&1; then
   kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
+fi
+
+if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+  exit 0
 fi
 
 if [[ "$UPDATE_MODE" -ne 1 && -t 0 ]]; then
