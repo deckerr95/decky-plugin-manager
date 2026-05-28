@@ -347,20 +347,31 @@ uninstall_plugin_menu_loop() {
     IFS='|' read -r path state <<< "${map[$choice]}"
     name=$(basename "$path")
 
-    clear
-    echo "About to uninstall:"
-    echo
-    echo "- Plugin: $name"
-    echo "- Status: $state"
-    echo "- Path: $path"
-    echo
-    echo "Type 'yes' to confirm [yes/NO]: "
+    local confirm=""
 
-    read -rp "> " confirm
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      whiptail \
+        --title "Confirm uninstall" \
+        --yesno "Uninstall plugin?\n\n$name\n\n$path" 12 70
 
-    if [[ "$confirm" != "yes" ]]; then
-      show_result "Uninstall cancelled"
-      continue
+      if [[ $? -ne 0 ]]; then
+        show_result "Uninstall cancelled"
+        continue
+      fi
+    else
+      clear
+      echo "About to uninstall:"
+      echo
+      echo "- Plugin: $name"
+      echo "- Status: $state"
+      echo "- Path: $path"
+      echo
+      read -rp "Type 'yes' to confirm [yes/NO]: " confirm
+
+      if [[ "$confirm" != "yes" ]]; then
+        show_result "Uninstall cancelled"
+        continue
+      fi
     fi
 
     uninstall_plugin "$path"
