@@ -89,6 +89,13 @@ ensure_sudo() {
   fi
 
   echo "$SUDO_PASS" | sudo -S -v >/dev/null 2>&1
+
+  if [[ $? -ne 0 ]]; then
+    SUDO_PASS=""
+    return 1
+  fi
+
+  return 0
 }
 
 if [[ "${1:-}" == "--version" ]]; then
@@ -155,16 +162,16 @@ uninstall_plugin() {
   if [[ "$(stat -c '%U' "$path")" == "root" ]]; then
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       ensure_sudo || return 1
+      [[ -z "$SUDO_PASS" ]] && return 1
+      echo "$SUDO_PASS" | sudo -S rm -rf "$path" || return 1
     else
       echo
       echo "Root privileges required to uninstall plugin..."
-      sudo rm -rf "$path"
+      sudo rm -rf "$path" || return 1
       return
     fi
-
-    echo "$SUDO_PASS" | sudo -S rm -rf "$path"
   else
-    rm -rf "$path"
+    rm -rf "$path" || return 1
   fi
 }
 
@@ -175,14 +182,15 @@ move() {
   if [[ "$(stat -c '%U' "$src")" == "root" ]]; then
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       ensure_sudo || return 1
-      echo "$SUDO_PASS" | sudo -S mv "$src" "$dst"
+      [[ -z "$SUDO_PASS" ]] && return 1
+      echo "$SUDO_PASS" | sudo -S mv "$src" "$dst" || return 1
     else
       echo
       echo "The plugin's directory is owned by root. Please provide root password to continue: "
-      sudo mv "$src" "$dst"
+      sudo mv "$src" "$dst" || return 1
     fi
   else
-    mv "$src" "$dst"
+    mv "$src" "$dst" || return 1
   fi
 }
 
@@ -394,8 +402,11 @@ uninstall_plugin_menu_loop() {
       fi
     fi
 
-    uninstall_plugin "$path"
-    msgbox "$name uninstalled"
+    if uninstall_plugin "$path"; then
+      msgbox "$name uninstalled"
+    else
+      msgbox "Operation failed: $name not uninstalled"
+    fi
   done
 }
 
@@ -449,11 +460,17 @@ plugin_menu_loop() {
     name=$(basename "$path")
 
     if [[ "$state" == "enabled" ]]; then
-      move "$path" "$DIS/$name"
-      msgbox "$name disabled"
+      if move "$path" "$DIS/$name"; then
+        msgbox "$name disabled"
+      else
+        msgbox "Operation failed: $name not changed"
+      fi
     else
-      move "$path" "$PLUG/$name"
-      msgbox "$name enabled"
+      if move "$path" "$PLUG/$name"; then
+        msgbox "$name enabled"
+      else
+        msgbox "Operation failed: $name not changed"
+      fi
     fi
   done
 }
