@@ -237,9 +237,6 @@ EOF
 )
 
 if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
-  tmpfile="$(mktemp)"
-  printf "%s\n" "$FINAL_MESSAGE" > "$tmpfile"
-
   LINES=$(tput lines 2>/dev/null || echo 40)
   COLS=$(tput cols 2>/dev/null || echo 100)
 
@@ -252,10 +249,8 @@ if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
   whiptail \
     --title "Decky Plugin Manager" \
     --scrolltext \
-    --textbox "$tmpfile" \
+    --msgbox "$FINAL_MESSAGE" \
     "$H" "$W"
-
-  rm -f "$tmpfile"
 else
   ui_info "$FINAL_MESSAGE"
 fi
