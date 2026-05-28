@@ -316,43 +316,55 @@ uninstall_plugin_menu_loop() {
     declare -A map=()
     declare -a options=()
 
-    options=("Go back")
     build_plugin_list options map
 
-    echo "Plugins:"
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      local choice
 
-    select opt in "${options[@]}"; do
+      choice=$(whiptail \
+        --title "Uninstall Plugins" \
+        --menu "Select a plugin to uninstall:" \
+        20 70 10 \
+        "${options[@]}" \
+        3>&1 1>&2 2>&3)
 
-      if [[ "$opt" == "Go back" ]]; then
-        return
-      fi
+      [[ $? -ne 0 ]] && return
 
-      [[ -z "$opt" ]] && break
-
-      IFS='|' read -r path state <<< "${map[$opt]}"
-      name=$(basename "$path")
-
-      clear
-      echo "About to uninstall:"
+    else
+      echo "Plugins:"
       echo
-      echo "- Plugin: $name"
-      echo "- Status: $state"
-      echo "- Path: $path"
-      echo
-      echo "Type 'yes' to confirm [yes/NO]: "
 
-      read -rp "> " confirm
+      options=("Go back" "${options[@]}")
 
-      if [[ "$confirm" != "yes" ]]; then
-        show_result "Uninstall cancelled"
+      select choice in "${options[@]}"; do
+        [[ -z "$choice" ]] && continue
         break
-      fi
+      done
 
-      uninstall_plugin "$path"
-      show_result "$name uninstalled"
+      [[ "$choice" == "Go back" ]] && return
+    fi
 
-      break
-    done
+    IFS='|' read -r path state <<< "${map[$choice]}"
+    name=$(basename "$path")
+
+    clear
+    echo "About to uninstall:"
+    echo
+    echo "- Plugin: $name"
+    echo "- Status: $state"
+    echo "- Path: $path"
+    echo
+    echo "Type 'yes' to confirm [yes/NO]: "
+
+    read -rp "> " confirm
+
+    if [[ "$confirm" != "yes" ]]; then
+      show_result "Uninstall cancelled"
+      continue
+    fi
+
+    uninstall_plugin "$path"
+    show_result "$name uninstalled"
   done
 }
 
