@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e
 
 unset LD_PRELOAD
 unset LD_LIBRARY_PATH
@@ -279,12 +279,21 @@ build_plugin_list() {
   IFS=$'\n' sorted=($(sort <<<"${all_plugins[*]}"))
   unset IFS
 
-  # rebuild output
+  # rebuild output (whiptail-compatible key/value + CLI fallback)
   for entry in "${sorted[@]}"; do
     IFS='|' read -r name path state <<< "$entry"
-    display="$name ($([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled"))"
-    _options+=("$display")
-    _map["$display"]="$path|$state"
+
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      local status_label
+      status_label="$([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled")"
+
+      _options+=("$name" "$status_label")
+      _map["$name"]="$path|$state"
+    else
+      display="$name ($([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled"))"
+      _options+=("$display")
+      _map["$display"]="$path|$state"
+    fi
   done
 }
 
@@ -349,45 +358,52 @@ uninstall_plugin_menu_loop() {
 
 plugin_menu_loop() {
   while true; do
-    clear
-
-    echo "Enable/Disable Plugins"
-    echo
-    echo "Select a plugin to toggle its state."
-    echo
-
     declare -A map=()
     declare -a options=()
 
-    options=("Go back")
     build_plugin_list options map
 
-    echo "Plugins:"
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      local choice
 
-    select opt in "${options[@]}"; do
+      choice=$(whiptail \
+        --title "Enable/Disable Plugins" \
+        --menu "Select a plugin to toggle its state:" \
+        20 70 10 \
+        "Go back" "Return to main menu" \
+        "${options[@]}" \
+        3>&1 1>&2 2>&3)
 
-      # Go back to main menu
-      if [[ "$opt" == "Go back" ]]; then
-        return
-      fi
+      [[ $? -ne 0 ]] && return
 
-      # invalid selection
-      [[ -z "$opt" ]] && break
+      [[ "$choice" == "Go back" ]] && return
 
-      IFS='|' read -r path state <<< "${map[$opt]}"
-      name=$(basename "$path")
+    else
+      clear
+      echo "Enable/Disable Plugins"
+      echo
+      echo "Select a plugin to toggle its state."
+      echo
 
-      if [ "$state" = "enabled" ]; then
-        move "$path" "$DIS/$name"
-        show_result "$name disabled"
-      else
-        move "$path" "$PLUG/$name"
-        show_result "$name enabled"
-      fi
+      options=("Go back" "${options[@]}")
 
-      # IMPORTANT: break select AND restart loop to refresh UI
-      break
-    done
+      select choice in "${options[@]}"; do
+        [[ -z "$choice" ]] && continue
+        [[ "$choice" == "Go back" ]] && return
+        break
+      done
+    fi
+
+    IFS='|' read -r path state <<< "${map[$choice]}"
+    name=$(basename "$path")
+
+    if [[ "$state" == "enabled" ]]; then
+      move "$path" "$DIS/$name"
+      show_result "$name disabled"
+    else
+      move "$path" "$PLUG/$name"
+      show_result "$name enabled"
+    fi
   done
 }
 
