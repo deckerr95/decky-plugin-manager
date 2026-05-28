@@ -53,6 +53,7 @@ msgbox() {
   if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
     whiptail \
       --title "Decky Plugin Manager" \
+      --scrolltext \
       --msgbox "$text" \
       10 60
   else
@@ -212,7 +213,6 @@ handle_update_check() {
   fi
 
   text="Current version: $VERSION
-
 Latest version: $REMOTE_VERSION"
 
   if [[ "$REMOTE_VERSION" == "$VERSION" ]]; then
