@@ -55,7 +55,7 @@ msgbox() {
       --title "Decky Plugin Manager" \
       --scrolltext \
       --msgbox "$text" \
-      10 60
+      20 70
   else
     clear
     echo "$text"
@@ -256,7 +256,7 @@ You are already up to date."
       --menu "$text
 
 An update is available." \
-      16 70 5 \
+      20 70 5 \
       "1" "Update now" \
       "2" "Back" \
       3>&1 1>&2 2>&3)
@@ -325,13 +325,6 @@ build_plugin_list() {
   done
 }
 
-show_result() {
-  clear
-  echo "$1"
-  echo
-  read -rp "Press Enter to continue..."
-}
-
 uninstall_plugin_menu_loop() {
   while true; do
     clear
@@ -382,7 +375,7 @@ uninstall_plugin_menu_loop() {
         --yesno "Uninstall plugin?\n\n$name\n\n$path" 12 70
 
       if [[ $? -ne 0 ]]; then
-        show_result "Uninstall cancelled"
+        msgbox "Uninstall cancelled"
         continue
       fi
     else
@@ -396,13 +389,13 @@ uninstall_plugin_menu_loop() {
       read -rp "Type 'yes' to confirm [yes/NO]: " confirm
 
       if [[ "$confirm" != "yes" ]]; then
-        show_result "Uninstall cancelled"
+        msgbox "Uninstall cancelled"
         continue
       fi
     fi
 
     uninstall_plugin "$path"
-    show_result "$name uninstalled"
+    msgbox "$name uninstalled"
   done
 }
 
@@ -457,10 +450,10 @@ plugin_menu_loop() {
 
     if [[ "$state" == "enabled" ]]; then
       move "$path" "$DIS/$name"
-      show_result "$name disabled"
+      msgbox "$name disabled"
     else
       move "$path" "$PLUG/$name"
-      show_result "$name enabled"
+      msgbox "$name enabled"
     fi
   done
 }
