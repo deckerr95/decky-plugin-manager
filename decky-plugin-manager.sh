@@ -308,11 +308,6 @@ uninstall_plugin_menu_loop() {
   while true; do
     clear
 
-    echo "Uninstall Plugins"
-    echo
-    echo "Select a plugin to uninstall."
-    echo
-
     declare -A map=()
     declare -a options=()
 
@@ -331,6 +326,10 @@ uninstall_plugin_menu_loop() {
       [[ $? -ne 0 ]] && return
 
     else
+      echo "Uninstall Plugins"
+      echo
+      echo "Select a plugin to uninstall."
+      echo
       echo "Plugins:"
       echo
 
