@@ -10,6 +10,59 @@ VERSION="0.6.0"
 REPO_RAW_URL="http://192.168.1.161:8000"
 VERSION_URL="$REPO_RAW_URL/version"
 
+HAS_WHIPTAIL=0
+
+if command -v whiptail >/dev/null 2>&1; then
+  HAS_WHIPTAIL=1
+fi
+
+menu() {
+  local title="$1"
+  shift
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    whiptail \
+      --title "$title" \
+      --menu "" \
+      20 70 10 \
+      "$@" \
+      3>&1 1>&2 2>&3
+  else
+    echo "$title" >&2
+    echo >&2
+
+    while [[ $# -gt 0 ]]; do
+      local key="$1"
+      local desc="$2"
+
+      echo "$key) $desc" >&2
+
+      shift 2
+    done
+
+    echo >&2
+    read -rp "Select option: " choice >&2
+
+    printf '%s\n' "$choice"
+  fi
+}
+
+msgbox() {
+  local text="$1"
+
+  if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+    whiptail \
+      --title "Decky Plugin Manager" \
+      --msgbox "$text" \
+      10 60
+  else
+    clear
+    echo "$text"
+    echo
+    read -rp "Press Enter to continue..."
+  fi
+}
+
 init_paths() {
   USER_NAME="${SUDO_USER:-$USER}"
   BASE="$(eval echo ~${SUDO_USER:-$USER})"
@@ -328,17 +381,18 @@ plugin_menu_loop() {
 
 main_menu() {
   while true; do
-    clear
+    
+    [[ "$HAS_WHIPTAIL" -eq 0 ]] && clear
 
-    echo "Decky Plugin Manager $VERSION"
-    echo
-    echo "1) Enable/disable plugins"
-    echo "2) Uninstall plugins"
-    echo "3) Check for update"
-    echo "4) Exit"
-    echo
+    opt=$(menu \
+      "Decky Plugin Manager $VERSION" \
+      "1" "Enable/disable plugins" \
+      "2" "Uninstall plugins" \
+      "3" "Check for update" \
+      "4" "Exit"
+    )
 
-    read -rp "Select option: " opt
+    [[ $? -ne 0 ]] && exit 0
 
     case "$opt" in
       1)
@@ -352,8 +406,6 @@ main_menu() {
         ;;
       4)
         exit 0
-        ;;
-      *)
         ;;
     esac
   done
