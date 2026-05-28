@@ -64,6 +64,20 @@ msgbox() {
   fi
 }
 
+has_plugins() {
+  local f
+
+  for f in "$PLUG"/* "$DIS"/*; do
+    [[ -e "$f" ]] && return 0
+  done
+
+  return 1
+}
+
+show_no_plugins() {
+  msgbox "No plugins installed."
+}
+
 init_paths() {
   USER_NAME="${SUDO_USER:-$USER}"
   BASE="$(eval echo ~${SUDO_USER:-$USER})"
@@ -342,6 +356,11 @@ uninstall_plugin_menu_loop() {
 
     build_plugin_list options map
 
+    if ! has_plugins; then
+      show_no_plugins
+      return
+    fi
+
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       local choice
 
@@ -416,6 +435,11 @@ plugin_menu_loop() {
     declare -a options=()
 
     build_plugin_list options map
+
+    if ! has_plugins; then
+      show_no_plugins
+      return
+    fi
 
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       local choice
