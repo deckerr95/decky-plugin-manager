@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -e
 
 unset LD_PRELOAD
 unset LD_LIBRARY_PATH
@@ -109,6 +108,7 @@ ensure_sudo() {
     return 1
   fi
 
+  SUDO_PASS=""
   return 0
 }
 
@@ -176,8 +176,7 @@ uninstall_plugin() {
   if [[ "$(stat -c '%U' "$path")" == "root" ]]; then
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       ensure_sudo || return 1
-      [[ -z "$SUDO_PASS" ]] && return 1
-      echo "$SUDO_PASS" | sudo -S rm -rf "$path" || return 1
+      sudo rm -rf "$path" || return 1
     else
       echo
       echo "Root privileges required to uninstall plugin..."
@@ -193,11 +192,60 @@ move() {
   local src="$1"
   local dst="$2"
 
+  # Check if destination exists and is a directory
+  if [[ -e "$dst" ]]; then
+    if [[ ! -d "$dst" ]]; then
+      # Destination exists but is not a directory
+      if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+        whiptail --title "Error" --msgbox "Destination exists and is not a directory:\n$dst" 10 60
+      else
+        echo "Error: Destination exists and is not a directory: $dst" >&2
+      fi
+      return 1
+    fi
+
+    # Destination is a directory, ask for confirmation to remove it
+    local confirm
+    if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+      whiptail --title "Confirm replacement" --yesno "The destination directory already exists:\n$dst\n\nDo you want to remove it and replace it with the source?" 12 70
+      confirm=$?
+      # whiptail returns 0 for Yes, 1 for No
+      if [[ $confirm -ne 0 ]]; then
+        return 1
+      fi
+    else
+      echo
+      echo "The destination directory already exists:"
+      echo "$dst"
+      echo
+      read -rp "Do you want to remove it and replace it with the source? [y/N]: " confirm
+      if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        return 1
+      fi
+    fi
+
+    # User confirmed, remove the destination directory
+    # Determine sudo need based on destination ownership
+    local dst_owner
+    dst_owner="$(stat -c '%U' "$dst")"
+    if [[ "$dst_owner" == "root" ]]; then
+      if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
+        ensure_sudo || return 1
+        sudo rm -rf "$dst" || return 1
+      else
+        echo
+        echo "Removing existing destination directory (owned by root)..."
+        sudo rm -rf "$dst" || return 1
+      fi
+    else
+      rm -rf "$dst" || return 1
+    fi
+  fi
+
   if [[ "$(stat -c '%U' "$src")" == "root" ]]; then
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       ensure_sudo || return 1
-      [[ -z "$SUDO_PASS" ]] && return 1
-      echo "$SUDO_PASS" | sudo -S mv "$src" "$dst" || return 1
+      sudo mv "$src" "$dst" || return 1
     else
       echo
       echo "The plugin's directory is owned by root. Please provide root password to continue: "
