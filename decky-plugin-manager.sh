@@ -307,22 +307,24 @@ build_plugin_list() {
   declare -n _options="$1"
   declare -n _map="$2"
 
-  local f name display
+  local f name display field
+  local IFS
+  local -a all_plugins sorted
 
-  local all_plugins=()
+  all_plugins=()
 
   # collect enabled
   for f in "$PLUG"/*; do
     [ -e "$f" ] || continue
     name=$(basename "$f")
-    all_plugins+=("$name|$f|enabled")
+    all_plugins+=("${name}"$'\x1f'"$f"$'\x1f'"enabled")
   done
 
   # collect disabled
   for f in "$DIS"/*; do
     [ -e "$f" ] || continue
     name=$(basename "$f")
-    all_plugins+=("$name|$f|disabled")
+    all_plugins+=("${name}"$'\x1f'"$f"$'\x1f'"disabled")
   done
 
   # sort alphabetically by plugin name
@@ -331,18 +333,18 @@ build_plugin_list() {
 
   # rebuild output (whiptail-compatible key/value + CLI fallback)
   for entry in "${sorted[@]}"; do
-    IFS='|' read -r name path state <<< "$entry"
+    IFS=$'\x1f' read -r name path state <<< "$entry"
 
     if [[ "$HAS_WHIPTAIL" -eq 1 ]]; then
       local status_label
       status_label="$([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled")"
 
       _options+=("$name" "$status_label")
-      _map["$name"]="$path|$state"
+      _map["$name"]="$path"$'\x1f'"$state"
     else
       display="$name ($([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled"))"
       _options+=("$display")
-      _map["$display"]="$path|$state"
+      _map["$display"]="$path"$'\x1f'"$state"
     fi
   done
 }
@@ -391,7 +393,7 @@ uninstall_plugin_menu_loop() {
       [[ "$choice" == "Go back" ]] && return
     fi
 
-    IFS='|' read -r path state <<< "${map[$choice]}"
+    IFS=$'\x1f' read -r path state <<< "${map[$choice]}"
     name=$(basename "$path")
 
     local confirm=""
@@ -447,10 +449,10 @@ plugin_menu_loop() {
       local args=()
 
       for entry in "${sorted[@]}"; do
-        IFS='|' read -r name path state <<< "$entry"
+        IFS=$'\x1f' read -r name path state <<< "$entry"
         status="$([[ "$state" == "enabled" ]] && echo "Enabled" || echo "Disabled")"
         args+=("$name" "$status")
-        _map["$name"]="$path|$state"
+        _map["$name"]="$path"$'\x1f'"$state"
       done
 
       choice=$(whiptail \
@@ -480,7 +482,7 @@ plugin_menu_loop() {
       done
     fi
 
-    IFS='|' read -r path state <<< "${map[$choice]}"
+    IFS=$'\x1f' read -r path state <<< "${map[$choice]}"
     name=$(basename "$path")
 
     if [[ "$state" == "enabled" ]]; then
