@@ -328,8 +328,7 @@ build_plugin_list() {
   done
 
   # sort alphabetically by plugin name
-  IFS=$'\n' sorted=($(sort <<<"${all_plugins[*]}"))
-  unset IFS
+  sorted=($(printf '%s\n' "${all_plugins[@]}" | sort))
 
   # rebuild output (whiptail-compatible key/value + CLI fallback)
   for entry in "${sorted[@]}"; do
