@@ -364,6 +364,7 @@ build_plugin_list() {
   # collect enabled
   for f in "$PLUG"/*; do
     [ -e "$f" ] || continue
+    [[ -L "$f" ]] && continue  # Skip symlinks to prevent path traversal
     name=$(basename "$f")
     all_plugins+=("${name}"$'\x1f'"$f"$'\x1f'"enabled")
   done
@@ -371,6 +372,7 @@ build_plugin_list() {
   # collect disabled
   for f in "$DIS"/*; do
     [ -e "$f" ] || continue
+    [[ -L "$f" ]] && continue  # Skip symlinks to prevent path traversal
     name=$(basename "$f")
     all_plugins+=("${name}"$'\x1f'"$f"$'\x1f'"disabled")
   done
