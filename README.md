@@ -147,3 +147,13 @@ If plugins do not appear:
 ```
 
 must exist and contain Decky plugins.
+
+---
+## Disclaimer
+
+The author of this tool is not responsible for any damage, data loss, or software breakage that may occur from using this tool.
+Use at your own risk. Always backup your data before making changes to your system.
+
+This tool is provided as-is without any warranty, express or implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose and noninfringement. In no event shall the author be liable for any claim, damages or other liability,
+whether in an action of contract, tort or otherwise, arising from, out of or in connection with the tool or the use or other dealings in the tool.
