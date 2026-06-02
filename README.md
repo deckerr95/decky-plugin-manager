@@ -9,7 +9,6 @@ A user-friendly tool to individually enable/disable/uninstall [Decky Loader](htt
 - Prevent full Decky breakage from a single bad plugin
 - User-friendly GUI interface using whiptail (primary) with CLI fallback
 - Graphical menus and dialogs for easy navigation
-- Works directly with Decky plugin directories
 - Adds desktop launchers for the main tool, as well as the uninstaller, for easy access
 - Easy installation and uninstallation
 - Built-in update system
@@ -95,12 +94,12 @@ When you launch the manager, you'll see the main menu with these options:
 
 1. **Enable/disable plugins**
    - Toggle plugin state between enabled and disabled
-   - Select a plugin to move it between `~/homebrew/plugins` (enabled) and `~/homebrew.disabled` (disabled)
+   - Moves selected plugin between `~/homebrew/plugins` (enabled) and `~/homebrew.disabled` (disabled)
    - Visual indicator shows current state of each plugin
 
 2. **Uninstall plugins**
    - **WARNING**: Permanently deletes selected plugins
-   - Removes plugin folders and all associated files
+   - Removes plugin folder from `~/homebrew/plugins`
 
 3. **Check for update**
    - Compare local version with remote version file
@@ -109,14 +108,6 @@ When you launch the manager, you'll see the main menu with these options:
 
 4. **Exit**
    - Close the manager and return to desktop/terminal
-
-### Typical User Flow
-1. **Launch** from desktop launcher or terminal
-2. **Select action** from main menu (enable/disable plugins, check updates, etc.)
-3. **Choose plugins** using the interactive selection interface
-4. **Confirm changes** when prompted
-5. **View results** with success/failure messages
-6. **Restart Steam/Decky Loader** for changes to take effect
 
 ### Tips for Effective Use
 - **Toggle suspected problematic plugins to disabled** first
@@ -132,7 +123,6 @@ The tool includes built-in update checking functionality:
 ### Update Checking
 - **Version comparison**: Compares local version against remote `version` file
 - **Simple mechanism**: Currently checks only version difference (future improvements may add more robust checking)
-- **Automatic checks**: Can be triggered from the main menu's "Check for updates" option
 
 ### Update Process
 - When an update is available, the tool downloads and executes the installer with `--update --yes` flags
@@ -164,6 +154,7 @@ This removes:
 
 * Installed binary
 * Symlink (`dpm`)
+* Desktop launchers (`*.desktop`)
 
 ---
 
@@ -183,12 +174,6 @@ Desktop launchers:
 ~/.local/share/applications/dpm-uninstall.desktop
 ```
 
-Ensure this directory is in PATH:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
 ---
 
 ## Requirements
@@ -204,9 +189,9 @@ export PATH="$HOME/.local/bin:$PATH"
   * CLI fallback available if whiptail is not installed
 
 ### Notes
-* sudo prompts are cached for a few minutes after authentication (standard sudo behavior)
+* sudo prompts are cached for a few minutes after authentication (standard sudo behavior, the script doesn't store any credentials). Usually the first plugin toggle/uninstall operation requires sudo password, the ones after that don't.
+* I considered implementing a menu option that takes ownership of all plugin directories to the current user (usually `deck`), that would result in DPM not asking for root password (until you install a new plugin, that will be owned by root of course), but AFAIK plugin directories being owned by `root` is an intentional security design choice by the developers of Decky, so I decided not to go forward with this.
 * The tool automatically uses the best available interface for your system
-* curl requirement note removed - all target distributions (SteamOS, Bazzite) have curl pre-installed
 
 ---
 
@@ -219,12 +204,10 @@ The manager provides a simple but effective plugin management system:
   - `~/homebrew/plugins` (active plugins)
   - `~/homebrew.disabled` (disabled plugins, created automatically if missing)
 - **Moves plugin folders** between these directories to enable/disable functionality
-- **Changes take effect** after restarting Steam / Decky Loader
+- **Changes take full effect** after restarting Steam / Decky Loader. Otherwise, Decky may show errors that a plugin couldn't be loaded.
 
 ### Root Ownership Handling
 - When plugin directories are owned by root (common after manual Decky installation), the tool will prompt for sudo password
-- Uses `ensure_sudo()` function to cache authentication temporarily using system sudo cache
-- Password prompts appear via whiptail passwordbox (GUI) or terminal input (CLI fallback)
 
 ### Directory Management
 - Automatically creates `~/homebrew.disabled` directory if it doesn't exist
@@ -235,9 +218,9 @@ The manager provides a simple but effective plugin management system:
 
 ## Purpose of this project
 
-It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This results in Decky crashing. For users, the only real options to fix this are:
+It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This can result Decky crashing. For users, the only real options to fix this are:
 
-1. Going into desktop mode, opening a terminal, and deleting the plugin dir from `/home/deck/homebrew/plugins/`
+1. Going into desktop mode, opening a terminal, and deleting the plugin dir from `~/homebrew/plugins/`
 
 2. SSH-ing into the deck, and deleting the plugin
 
@@ -249,14 +232,6 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
 
 ### Common Issues
 
-#### Installation Issues
-* **Desktop launchers not appearing after installation**
-  * Run `kbuildsycoca5` or `kbuildsycoca6` to refresh KDE desktop cache
-  * Log out and back into Desktop Mode
-* **Installation script fails**
-  * Ensure you have internet connectivity
-  * Check that the server `http://192.168.1.161:8000` is accessible
-
 #### Plugin Management Issues
 * **No plugins appear in the manager**
   1. **Decky Loader not installed**: Ensure `~/homebrew/plugins` directory exists
@@ -264,17 +239,15 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
   3. **Permission issues**: Check if plugin directories are accessible
 * **Permission errors when moving plugins**
   * Plugin directories owned by root: sudo password will be prompted
-  * Ensure you have sudo privileges on your system
+  * If you are on SteamOS, ensure that the `deck` user has a root password set.
   * Check `~/homebrew/plugins` ownership with `ls -la ~/homebrew/`
-* **Changes not taking effect**
-  * Restart Steam / Decky Loader for changes to apply
-  * Ensure plugin folders are being moved correctly between `~/homebrew/plugins` and `~/homebrew.disabled`
+* **Decky complains about the plugin you disabled/uninstalled**
+  * Decky needs to reload for the disabled/uninstalled plugins to be fully unloaded. Restart Steam / Steam Deck for changes to apply.
 
 #### Update Issues
 * **Update check failures**
   * Network connectivity issues
-  * Server `http://192.168.1.161:8000` may be unavailable
-  * Check internet connection and try again later
+  * GitHub may be down
 
 #### Interface Issues
 * **Whiptail not working or showing basic interface**
