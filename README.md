@@ -267,6 +267,11 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
 * **Path handling**: Installs to `~/.local/bin/` for user installation without requiring system-wide permissions
 
 ---
+
+Licensed under GPL-3.0-only
+
+---
+
 ## Disclaimer
 
 The author of this tool is not responsible for any damage, data loss, or software breakage that may occur from using this tool.
