@@ -1,6 +1,6 @@
 # Decky Plugin Manager
 
-A user-friendly tool to individually enable/disable [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky from loading after SteamOS updates.
+A user-friendly tool to individually enable/disable/uninstall [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky from loading after SteamOS updates.
 
 ---
 
@@ -12,7 +12,7 @@ A user-friendly tool to individually enable/disable [Decky Loader](https://githu
 - Works directly with Decky plugin directories
 - Adds desktop launchers for the main tool, as well as the uninstaller, for easy access
 - Easy installation and uninstallation
-- Built-in update checking system
+- Built-in update system
 
 ---
 
@@ -22,10 +22,10 @@ The tool provides a user-friendly interface with two modes:
 
 ### Primary: Whiptail GUI (Recommended)
 - **Graphical menus and dialogs** for easy navigation
-- **Checklist interface** for selecting multiple plugins
+- **Single plugin selection** interface for toggling plugin state
 - **Password prompts** via secure passwordbox for sudo authentication
-- **Progress indicators** and visual feedback
-- **Automatic detection**: Used when `whiptail` command is available and terminal is interactive
+- **Visual feedback** with success/failure messages
+- **Automatic detection**: Used when `whiptail` command is available
 
 ### Fallback: CLI Mode
 - **Text-based interface** for systems without whiptail
@@ -93,33 +93,21 @@ dpm
 ### Main Menu Options
 When you launch the manager, you'll see the main menu with these options:
 
-1. **Enable Plugin(s)**
-   - Move selected plugins from `~/homebrew.disabled` to `~/homebrew/plugins`
-   - Select one or multiple plugins using the interface
+1. **Enable/disable plugins**
+   - Toggle plugin state between enabled and disabled
+   - Select a plugin to move it between `~/homebrew/plugins` (enabled) and `~/homebrew.disabled` (disabled)
+   - Visual indicator shows current state of each plugin
 
-2. **Disable Plugin(s)**
-   - Move selected plugins from `~/homebrew/plugins` to `~/homebrew.disabled`
-   - Isolate problematic plugins without deleting them
-
-3. **Enable All Plugins**
-   - Move all disabled plugins back to active directory
-   - Useful after fixing plugin issues or SteamOS updates
-
-4. **Disable All Plugins**
-   - Move all plugins to disabled directory
-   - Last resort when Decky won't load and you need to identify the culprit
-
-5. **Uninstall Plugin(s)**
+2. **Uninstall plugins**
    - **WARNING**: Permanently deletes selected plugins
    - Removes plugin folders and all associated files
-   - Use with caution - data cannot be recovered
 
-6. **Check for Updates**
+3. **Check for update**
    - Compare local version with remote version file
    - Automatically download and install updates if available
    - Maintains your plugin configurations during update
 
-7. **Exit**
+4. **Exit**
    - Close the manager and return to desktop/terminal
 
 ### Typical User Flow
@@ -131,9 +119,8 @@ When you launch the manager, you'll see the main menu with these options:
 6. **Restart Steam/Decky Loader** for changes to take effect
 
 ### Tips for Effective Use
-- **Start with disabling** suspected problematic plugins first
-- **Enable one at a time** after SteamOS updates to identify broken plugins
-- **Use "Disable All"** when Decky won't load at all, then enable plugins gradually
+- **Toggle suspected problematic plugins to disabled** first
+- **Toggle plugins one at a time** after SteamOS updates to identify broken plugins (enable them individually)
 - **Check for updates regularly** to ensure you have the latest features and fixes
 
 ---
