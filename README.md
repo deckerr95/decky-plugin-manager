@@ -1,6 +1,6 @@
 # Decky Plugin Manager
 
-A user-friendly tool to individually enable/disable/uninstall [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky from loading after SteamOS updates.
+A user-friendly tool to individually enable/disable/uninstall [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky from loading after SteamOS updates. Easy usage from Game Mode.
 
 ---
 
@@ -9,7 +9,7 @@ A user-friendly tool to individually enable/disable/uninstall [Decky Loader](htt
 - Prevent full Decky breakage from a single bad plugin
 - User-friendly GUI interface using whiptail (primary) with CLI fallback
 - Graphical menus and dialogs for easy navigation
-- Adds desktop launchers for the main tool, as well as the uninstaller, for easy access
+- Adds desktop launchers for the main tool, as well as the uninstaller, for easy access (Add the launchers to Steam to use in Game Mode)
 - Easy installation and uninstallation
 - Built-in update system
 
@@ -110,6 +110,7 @@ When you launch the manager, you'll see the main menu with these options:
    - Close the manager and return to desktop/terminal
 
 ### Tips for Effective Use
+- **Add Decky Plugin Manager (DPM) to Steam**, then launch it easily from Game Mode
 - **Toggle suspected problematic plugins to disabled** first
 - **Toggle plugins one at a time** after SteamOS updates to identify broken plugins (enable them individually)
 - **Check for updates regularly** to ensure you have the latest features and fixes
@@ -220,9 +221,9 @@ The manager provides a simple but effective plugin management system:
 
 It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This can result Decky crashing. For users, the only real options to fix this are:
 
-1. Going into desktop mode, opening a terminal, and deleting the plugin dir from `~/homebrew/plugins/`
+1. Going into desktop mode, opening a terminal, and deleting/moving the plugin dir from `~/homebrew/plugins/`
 
-2. SSH-ing into the deck, and deleting the plugin
+2. SSH-ing into the deck, and deleting/moving the plugin dir
 
 This project aims to provide a seamless, quick and easy way of disabling/enabling individual Decky plugins.
 
