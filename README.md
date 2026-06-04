@@ -43,7 +43,7 @@ The tool provides a user-friendly interface with two modes:
 Provides a one-click installer from Desktop Mode. Follow these simple steps:
 
 1. **Download the desktop launcher:**
-   [Install Decky Plugin Manager](http://192.168.1.161:8000/install-decky-plugin-manager.desktop)
+   [Install Decky Plugin Manager](https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install-decky-plugin-manager.desktop)
 
 2. **Open in file manager (Dolphin)**: Navigate to your Downloads folder and double-click the `.desktop` file
 
@@ -58,13 +58,13 @@ Provides a one-click installer from Desktop Mode. Follow these simple steps:
 For users who prefer terminal installation:
 
 ```bash
-curl -fsSL http://192.168.1.161:8000/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
+curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
 ```
 
 Or if you want to manually inspect the script first:
 
 ```bash
-curl -fsSL http://192.168.1.161:8000/install.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o install.sh
 # Review the script, then run:
 bash install.sh
 ```
@@ -134,7 +134,7 @@ The tool includes built-in update checking functionality:
 You can also update manually by re-running the installation script:
 
 ```bash
-curl -fsSL http://192.168.1.161:8000/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
+curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
 ```
 
 **Note**: The update system is designed to be simple and reliable, focusing on the essential function of keeping the tool current.

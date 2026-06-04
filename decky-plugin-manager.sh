@@ -5,9 +5,13 @@ unset LD_LIBRARY_PATH
 
 VERSION="0.6.0"
 
-# REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
-REPO_RAW_URL="http://192.168.1.161:8000"
-VERSION_URL="$REPO_RAW_URL/version"
+# MAIN_BRANCH_URL is used for version checks and update downloads (always points to latest).
+MAIN_BRANCH_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+VERSION_URL="$MAIN_BRANCH_URL/version"
+
+# REPO_RAW_URL is used by install.sh to download this specific version.
+# Changed to the release tag by prepare-release.sh, reverted to main by restore-development-urls.sh.
+REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 
 HAS_WHIPTAIL=0
 
@@ -278,7 +282,7 @@ check_for_update() {
 install_update() {
   TMP="$(mktemp)"
   
-  if curl -fsSL "$REPO_RAW_URL/install.sh" -o "$TMP" &&
+  if curl -fsSL "$MAIN_BRANCH_URL/install.sh" -o "$TMP" &&
     env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" bash "$TMP" --update --yes; then
     echo
     echo "Update completed successfully."

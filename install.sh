@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/latest"
-# REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
-REPO_RAW_URL="http://192.168.1.161:8000"
-VERSION_URL="$REPO_RAW_URL/version"
+# MAIN_BRANCH_URL is used for version checks (always points to latest).
+MAIN_BRANCH_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+VERSION_URL="$MAIN_BRANCH_URL/version"
+
+# REPO_RAW_URL is used to download the script payload for this specific version.
+# Changed to the release tag by prepare-release.sh, reverted to main by restore-development-urls.sh.
+REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
 
 AUTO_YES=0
 UPDATE_MODE=0
