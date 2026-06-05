@@ -164,6 +164,13 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   else
     echo "Skipped (not found): $UNINSTALL_DESKTOP_FILE"
   fi
+  
+  # Refresh KDE app cache to make it forget the desktop launchers for DPM
+  if command -v kbuildsycoca5 >/dev/null 2>&1; then
+    kbuildsycoca5 --noincremental >/dev/null 2>&1 || true
+  elif command -v kbuildsycoca6 >/dev/null 2>&1; then
+    kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
+  fi
 
   echo
   echo "Uninstall complete."
