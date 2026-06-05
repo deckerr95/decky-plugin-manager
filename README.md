@@ -42,8 +42,10 @@ The tool provides a user-friendly interface with two modes:
 
 Provides a one-click installer from Desktop Mode. Follow these simple steps:
 
-1. **Download the desktop launcher:**
-   [Install Decky Plugin Manager](https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install-decky-plugin-manager.desktop)
+1. **Download the desktop launcher from here:** [Install Decky Plugin Manager](https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install-decky-plugin-manager.desktop)
+
+    * **To download a specific release, go to Releases, then download `install-decky-plugin-manager.desktop`**
+   
 
 2. **Open in file manager (Dolphin)**: Navigate to your Downloads folder and double-click the `.desktop` file
 
@@ -89,9 +91,9 @@ Or using the shorter alias:
 dpm
 ```
 
-**Tips for usage in Steam / Game Mode**
+**Tips for usage in Steam / Game Mode:**
 1. Add `Decky Plugin Manager (DPM)` to Steam.
-2. Go go the controller settings of `Decky Plugin Manager (DPM)` in Game Mode, then set the controller scheme to `Web browser`
+2. Go go the controller settings of `Decky Plugin Manager (DPM)` in Game Mode, then set the controller scheme to `Web browser`. After this, you should be able to navigate the menu using `DPad`, confirm using `A`, and cancel using `B`.
 
 ### Main Menu Options
 When you launch the manager, you'll see the main menu with these options:
