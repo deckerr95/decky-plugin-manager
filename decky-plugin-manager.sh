@@ -6,12 +6,12 @@ unset LD_LIBRARY_PATH
 VERSION="0.6.0"
 
 # MAIN_BRANCH_URL is used for version checks and update downloads (always points to latest).
-MAIN_BRANCH_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
-VERSION_URL="$MAIN_BRANCH_URL/version"
-
-# REPO_RAW_URL is used by install.sh to download this specific version.
-# Changed to the release tag by prepare-release.sh, reverted to main by restore-development-urls.sh.
-REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+if [[ -n "${RELEASE_TAG:-}" ]]; then
+    REPO_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/${RELEASE_TAG}"
+else
+    REPO_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+fi
+VERSION_URL="$REPO_URL/version"
 
 HAS_WHIPTAIL=0
 
@@ -283,7 +283,7 @@ install_update() {
   TMP="$(mktemp)"
   
   if curl -fsSL "$MAIN_BRANCH_URL/install.sh" -o "$TMP" &&
-    env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" bash "$TMP" --update --yes; then
+    env -i HOME="$BASE" USER="$USER_NAME" SUDO_USER="${SUDO_USER:-}" PATH="$PATH" RELEASE_TAG="$RELEASE_TAG" bash "$TMP" --update --yes; then
     echo
     echo "Update completed successfully."
     echo "Please restart Decky Plugin Manager to use the updated version."

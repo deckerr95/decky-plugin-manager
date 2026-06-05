@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Run on tags starting with v (e.g., v1.0.0)
+
+jobs:
+  create-github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all branches and tags
+          fetch-depth: 0
+
+      - name: Set up environment variables
+        id: set_vars
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+
+      - name: Update URLs in scripts for release assets
+        run: |
+          # These changes are temporary for the workflow and are not pushed back.
+          # They ensure the downloaded artifacts (if any are created via this workflow)
+          # correctly point to the release tag.
+          # However, with the new `REPO_URL` logic, this step might be redundant if we just
+          # attach the scripts as is from the release branch, as they will use RELEASE_TAG env.
+
+          # For install-decky-plugin-manager.desktop, we still need to update the URL
+          # because its content directly points to raw.githubusercontent.com.
+          RELEASE_RAW_URL_FOR_DESKTOP="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/${TAG}"
+          sed -i "s|curl -fsSL [^ ]*/install.sh|curl -fsSL ${RELEASE_RAW_URL_FOR_DESKTOP}/install.sh|g" install-decky-plugin-manager.desktop
+          echo "Updated install-decky-plugin-manager.desktop for release."
+        env:
+          TAG: ${{ env.TAG }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          files: |
+            decky-plugin-manager.sh
+            install.sh
+            install-decky-plugin-manager.desktop
+            version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

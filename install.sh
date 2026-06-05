@@ -2,12 +2,12 @@
 set -euo pipefail
 
 # MAIN_BRANCH_URL is used for version checks (always points to latest).
-MAIN_BRANCH_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
-VERSION_URL="$MAIN_BRANCH_URL/version"
-
-# REPO_RAW_URL is used to download the script payload for this specific version.
-# Changed to the release tag by prepare-release.sh, reverted to main by restore-development-urls.sh.
-REPO_RAW_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+if [[ -n "${RELEASE_TAG:-}" ]]; then
+    REPO_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/${RELEASE_TAG}"
+else
+    REPO_URL="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main"
+fi
+VERSION_URL="$REPO_URL/version"
 
 AUTO_YES=0
 UPDATE_MODE=0
@@ -159,7 +159,7 @@ fi
 
 # download
 TMP="$(mktemp)"
-if ! curl -fsSL "$REPO_RAW_URL/decky-plugin-manager.sh" -o "$TMP"; then
+if ! curl -fsSL "$REPO_URL/decky-plugin-manager.sh" -o "$TMP"; then
   ui_error "Failed to download installer payload."
   exit 1
 fi
