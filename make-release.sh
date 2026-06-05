@@ -9,7 +9,8 @@ fi
 
 VERSION="$1"
 TAG="v${VERSION}"
-RELEASE_WORKTREE_DIR="tmp-release-worktree" # Using a more descriptive name
+ORIGINAL_DIR="$(pwd)"
+RELEASE_WORKTREE_DIR="../decky-release-worktree-${TAG}"
 
 echo "=== Preparing release ${TAG} ==="
 
@@ -60,7 +61,7 @@ fi
 echo "  Main branch contents copied to worktree, overwriting release branch files."
 
 # Now change into the worktree directory to apply release-specific changes
-cd "$RELEASE_WORKTREE_DIR" || { echo "Failed to change directory to worktree."; exit 1; }
+cd "$RELEASE_WORKTREE_DIR" || { echo "Failed to change directory to worktree: $RELEASE_WORKTREE_DIR"; exit 1; }
 
 # 4. Update URLs in release worktree
 echo "  Updating URLs in release worktree for ${TAG}..."
@@ -86,7 +87,7 @@ read -p "Press Enter to continue..."
 echo "  Committed desktop launcher changes to 'release' branch."
 
 # Exit worktree directory before tagging and pushing
-cd - > /dev/null
+cd "$ORIGINAL_DIR" > /dev/null
 
 # 5. Tag and push
 echo "  Tagging and pushing changes..."
