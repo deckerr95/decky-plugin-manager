@@ -89,6 +89,10 @@ Or using the shorter alias:
 dpm
 ```
 
+**Tips for usage in Steam / Game Mode**
+1. Add `Decky Plugin Manager (DPM)` to Steam.
+2. Go go the controller settings of `Decky Plugin Manager (DPM)` in Game Mode, then set the controller scheme to `Web browser`
+
 ### Main Menu Options
 When you launch the manager, you'll see the main menu with these options:
 
