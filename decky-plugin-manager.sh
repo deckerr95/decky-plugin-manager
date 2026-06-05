@@ -3,7 +3,7 @@
 unset LD_PRELOAD
 unset LD_LIBRARY_PATH
 
-VERSION=0.6.1
+VERSION=0.6.2
 
 # MAIN_BRANCH_URL is used for version checks and update downloads (always points to latest).
 if [[ -n "${RELEASE_TAG:-}" ]]; then
