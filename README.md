@@ -42,16 +42,12 @@ The tool provides a user-friendly interface with two modes:
 
 Provides a one-click installer from Desktop Mode. Follow these simple steps:
 
-1. **Download the desktop launcher from here:** [Install Decky Plugin Manager](https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install-decky-plugin-manager.desktop)
+1. **Download the desktop launcher from here:** [Install Decky Plugin Manager](https://github.com/deckerr95/decky-plugin-manager/releases/latest/download/install-decky-plugin-manager.desktop)
 
-    * **To download a specific release, go to Releases, then download `install-decky-plugin-manager.desktop`**
+    * To download a specific release, go to Releases, open the release, then download `install-decky-plugin-manager.desktop`
    
 
-2. **Open in file manager (Dolphin)**: Navigate to your Downloads folder and double-click the `.desktop` file
-
-3. **Follow installer prompts**: The installer will guide you through the process with clear instructions
-
-4. **Complete installation**: The tool will be installed to `~/.local/bin/` and desktop launchers will be created for easy access
+2. **Open in file manager (Dolphin)**: Navigate to your Downloads folder and double-click the `.desktop` file, then follow the steps in the installer.
 
 **Note**: The installer supports both fresh installation and updating existing installations. It checks for existing versions and prompts for upgrade or reinstall as needed.
 
@@ -60,13 +56,13 @@ Provides a one-click installer from Desktop Mode. Follow these simple steps:
 For users who prefer terminal installation:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
+curl -fsSL https://github.com/deckerr95/decky-plugin-manager/releases/latest/download/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
 ```
 
 Or if you want to manually inspect the script first:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o install.sh
+curl -fsSL https://github.com/deckerr95/decky-plugin-manager/releases/latest/download/install.sh -o install.sh
 # Review the script, then run:
 bash install.sh
 ```
@@ -117,9 +113,6 @@ When you launch the manager, you'll see the main menu with these options:
 
 ### Tips for Effective Use
 - **Add Decky Plugin Manager (DPM) to Steam**, then launch it easily from Game Mode
-- **Toggle suspected problematic plugins to disabled** first
-- **Toggle plugins one at a time** after SteamOS updates to identify broken plugins (enable them individually)
-- **Check for updates regularly** to ensure you have the latest features and fixes
 
 ---
 
@@ -140,7 +133,7 @@ The tool includes built-in update checking functionality:
 You can also update manually by re-running the installation script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/main/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
+curl -fsSL https://github.com/deckerr95/decky-plugin-manager/releases/latest/download/install.sh -o /tmp/dpm-install.sh && bash /tmp/dpm-install.sh
 ```
 
 **Note**: The update system is designed to be simple and reliable, focusing on the essential function of keeping the tool current.
@@ -189,15 +182,11 @@ Desktop launchers:
 * **bash** - Shell environment
 * **curl** - For downloading the installer (already available on Steam Deck/Bazzite)
 * **sudo** - Required when plugin directories are root-owned (common after manual Decky installation)
-
-### Recommended for Full GUI Experience
-* **whiptail** - Provides graphical menus and dialogs (primary interface)
-  * Automatically detected at runtime
-  * CLI fallback available if whiptail is not installed
+* **whiptail** - Provides graphical menus and dialogs (primary interface). Should be present by default on all major distros, especially SteamOS and Bazzite.
 
 ### Notes
 * sudo prompts are cached for a few minutes after authentication (standard sudo behavior, the script doesn't store any credentials). Usually the first plugin toggle/uninstall operation requires sudo password, the ones after that don't.
-* I considered implementing a menu option that takes ownership of all plugin directories to the current user (usually `deck`), that would result in DPM not asking for root password (until you install a new plugin, that will be owned by root of course), but AFAIK plugin directories being owned by `root` is an intentional security design choice by the developers of Decky, so I decided not to go forward with this.
+* I considered implementing a menu option that takes ownership of all plugin directories to the current user (usually `deck`), that would result in DPM not asking for root password repeatedly (until you install a new plugin, that will be owned by root of course), but AFAIK plugin directories being owned by `root` is an intentional security design choice by the developers of Decky, so I decided not to go forward with this.
 * The tool automatically uses the best available interface for your system
 
 ---
@@ -232,6 +221,8 @@ It's a common occurrence after a SteamOS update that some Decky plugins are not 
 2. SSH-ing into the deck, and deleting/moving the plugin dir
 
 This project aims to provide a seamless, quick and easy way of disabling/enabling individual Decky plugins.
+
+(Similar functionality is present in the latest builds of Decky Loader, but during my testing, it's not as robust yet as of June 2026, and by the way I already started development of this tool before Decky introduced it.)
 
 ---
 
