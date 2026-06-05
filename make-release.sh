@@ -52,12 +52,11 @@ echo "  Copying main branch contents into the worktree (overwriting release bran
 # Use rsync if available, otherwise fallback to cp
 if command -v rsync >/dev/null 2>&1; then
     # rsync excludes .git automatically when syncing to a git worktree
-    rsync -av --delete --exclude='.git' --exclude='.kilo' . "$RELEASE_WORKTREE_DIR/"
+    rsync -av --delete --exclude='.kilo' . "$RELEASE_WORKTREE_DIR/"
 else
     # Fallback: remove all files from worktree except .git, then copy from main
     find "$RELEASE_WORKTREE_DIR" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
     cp -r . "$RELEASE_WORKTREE_DIR/" 2>/dev/null || true  # ignore .git copy errors
-    rm -rf "$RELEASE_WORKTREE_DIR/.git" 2>/dev/null || true  # ensure .git from cp is removed
     rm -rf "$RELEASE_WORKTREE_DIR/.kilo" 2>/dev/null || true  # ensure .kilo is removed
 fi
 echo "  Main branch contents copied to worktree, overwriting release branch files."
@@ -80,9 +79,9 @@ fi
 echo "  install-decky-plugin-manager.desktop URL → ${TAG} tag"
 
 # Commit the desktop launcher change to the release branch within the worktree
-git -C "$RELEASE_WORKTREE_DIR" add install-decky-plugin-manager.desktop
+git -C "$RELEASE_WORKTREE_DIR" add "install-decky-plugin-manager.desktop"
 echo "  To commit desktop launcher change to 'release' branch, execute: "
-echo "  git -C "$RELEASE_WORKTREE_DIR" commit -m "Update desktop launcher for ${TAG} release""
+echo "  git -C \"$RELEASE_WORKTREE_DIR\" commit -m \"Update desktop launcher for ${TAG} release\""
 read -p "Press Enter to continue..."
 echo "  Committed desktop launcher changes to 'release' branch."
 
