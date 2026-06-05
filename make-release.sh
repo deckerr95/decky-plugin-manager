@@ -41,7 +41,9 @@ if ! git show-ref --verify --quiet refs/heads/release; then
 fi
 
 # Ensure worktree directory is clean before adding
+git worktree remove "$RELEASE_WORKTREE_DIR" --force || true
 rm -rf "$RELEASE_WORKTREE_DIR"
+git worktree prune
 git worktree add "$RELEASE_WORKTREE_DIR" release
 echo "  Worktree added for 'release' branch at $RELEASE_WORKTREE_DIR."
 
@@ -60,9 +62,7 @@ else
 fi
 echo "  Main branch contents copied to worktree, overwriting release branch files."
 
-# Now change into the worktree directory to apply release-specific changes
-cd "$RELEASE_WORKTREE_DIR" || { echo "Failed to change directory to worktree: $RELEASE_WORKTREE_DIR"; exit 1; }
-
+# Apply release-specific changes directly to the worktree directory
 # 4. Update URLs in release worktree
 echo "  Updating URLs in release worktree for ${TAG}..."
 # Set the RELEASE_TAG environment variable for the script execution in the worktree
@@ -73,16 +73,16 @@ export RELEASE_TAG="${TAG}"
 # because its content directly points to raw.githubusercontent.com.
 RELEASE_RAW_URL_FOR_DESKTOP="https://raw.githubusercontent.com/deckerr95/decky-plugin-manager/${TAG}"
 if [[ "$(uname)" == "Darwin" ]]; then
-  sed -i '' "s|curl -fsSL [^ ]*/install.sh|curl -fsSL ${RELEASE_RAW_URL_FOR_DESKTOP}/install.sh|g" install-decky-plugin-manager.desktop
+  sed -i '' "s|curl -fsSL [^ ]*/install.sh|curl -fsSL ${RELEASE_RAW_URL_FOR_DESKTOP}/install.sh|g" "$RELEASE_WORKTREE_DIR/install-decky-plugin-manager.desktop"
 else
-  sed -i "s|curl -fsSL [^ ]*/install.sh|curl -fsSL ${RELEASE_RAW_URL_FOR_DESKTOP}/install.sh|g" install-decky-plugin-manager.desktop
+  sed -i "s|curl -fsSL [^ ]*/install.sh|curl -fsSL ${RELEASE_RAW_URL_FOR_DESKTOP}/install.sh|g" "$RELEASE_WORKTREE_DIR/install-decky-plugin-manager.desktop"
 fi
 echo "  install-decky-plugin-manager.desktop URL → ${TAG} tag"
 
-# Commit the desktop launcher change to the release branch
-git add install-decky-plugin-manager.desktop
+# Commit the desktop launcher change to the release branch within the worktree
+git -C "$RELEASE_WORKTREE_DIR" add install-decky-plugin-manager.desktop
 echo "  To commit desktop launcher change to 'release' branch, execute: "
-echo "  git commit -m \"Update desktop launcher for ${TAG} release\""
+echo "  git -C "$RELEASE_WORKTREE_DIR" commit -m "Update desktop launcher for ${TAG} release""
 read -p "Press Enter to continue..."
 echo "  Committed desktop launcher changes to 'release' branch."
 
