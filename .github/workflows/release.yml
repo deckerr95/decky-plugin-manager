@@ -38,12 +38,6 @@ jobs:
           echo "Updated install-decky-plugin-manager.desktop for release."
         env:
           TAG: ${{ env.TAG }}
-
-      - name: Debug Token Loading
-        run: |
-          echo "Attempting to use secret: ${{ secrets.RELEASE_TOKEN }}"
-        shell: bash
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
