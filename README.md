@@ -15,6 +15,13 @@ A user-friendly tool to individually enable/disable/uninstall [Decky Loader](htt
 
 ---
 
+## 🖼️ Screenshots
+
+![Main Menu](docs/screenshots/main-menu.png)
+![Toggle plugins](docs/screenshots/toggle-plugins.png)
+
+---
+
 ## 🚀 Installation
 
 ### Steam Deck friendly
