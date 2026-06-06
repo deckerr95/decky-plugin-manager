@@ -1,10 +1,10 @@
-# Decky Plugin Manager
+# Decky Plugin Manager ![GitHub Release](https://img.shields.io/github/v/release/deckerr95/decky-plugin-manager)
 
 A user-friendly tool to individually enable/disable/uninstall [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky's user interface from loading after SteamOS updates. Easy usage from Game Mode.
 
 ---
 
-## Features
+## ✨ Features
 - Enable / disable individual Decky plugins
 - Prevent full Decky breakage from a single bad plugin
 - User-friendly GUI interface using whiptail (primary) with CLI fallback
@@ -15,28 +15,7 @@ A user-friendly tool to individually enable/disable/uninstall [Decky Loader](htt
 
 ---
 
-## Interface
-
-The tool provides a user-friendly interface with two modes:
-
-### Primary: Whiptail GUI (Recommended)
-- **Graphical menus and dialogs** for easy navigation
-- **Single plugin selection** interface for toggling plugin state
-- **Password prompts** via secure passwordbox for sudo authentication
-- **Visual feedback** with success/failure messages
-- **Automatic detection**: Used when `whiptail` command is available
-
-### Fallback: CLI Mode
-- **Text-based interface** for systems without whiptail
-- **Simple numbered menu** for plugin selection
-- **Terminal input** for password prompts
-- **Basic but functional**: Provides core functionality when GUI is unavailable
-
-**Note**: Whiptail is detected at runtime, not installation time. The script automatically uses the best available interface for your system.
-
----
-
-## Installation
+## 🚀 Installation
 
 ### Steam Deck friendly
 
@@ -66,6 +45,27 @@ curl -fsSL https://github.com/deckerr95/decky-plugin-manager/releases/latest/dow
 # Review the script, then run:
 bash install.sh
 ```
+
+---
+
+## 📱 Interface
+
+The tool provides a user-friendly interface with two modes:
+
+### Primary: Whiptail GUI (Recommended)
+- **Graphical menus and dialogs** for easy navigation
+- **Single plugin selection** interface for toggling plugin state
+- **Password prompts** via secure passwordbox for sudo authentication
+- **Visual feedback** with success/failure messages
+- **Automatic detection**: Used when `whiptail` command is available
+
+### Fallback: CLI Mode
+- **Text-based interface** for systems without whiptail
+- **Simple numbered menu** for plugin selection
+- **Terminal input** for password prompts
+- **Basic but functional**: Provides core functionality when GUI is unavailable
+
+**Note**: Whiptail is detected at runtime, not installation time. The script automatically uses the best available interface for your system.
 
 ---
 
@@ -116,7 +116,7 @@ When you launch the manager, you'll see the main menu with these options:
 
 ---
 
-## Update System
+## 🔄 Update System
 
 The tool includes built-in update checking functionality:
 
@@ -226,7 +226,7 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
 
 ---
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
@@ -255,10 +255,10 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
 
 ---
 
-## Notes
+## 📝 Notes
 
 * **Plugin safety**: A broken plugin can crash Decky Loader; this tool isolates that issue without deleting your plugins
-* **Testing status**: Tested on Bazzite and SteamOS (latest versions)
+* **Testing status**: Tested on Bazzite on Steam Deck
 * **Automatic updates**: Installation script pulls the latest version from the server
 * **Directory management**: Automatically creates `~/homebrew.disabled` directory if it doesn't exist
 * **KDE integration**: Installer calls `kbuildsycoca5` or `kbuildsycoca6` to refresh desktop launcher cache
