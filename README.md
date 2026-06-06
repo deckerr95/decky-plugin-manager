@@ -221,7 +221,7 @@ The manager provides a simple but effective plugin management system:
 
 ## Purpose of this project
 
-It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This can result Decky crashing. For users, the only real options to fix this are:
+It's a common occurrence after a SteamOS update that some Decky plugins are not updated in time. This can result in Decky crashing. For users, the only real options to fix this are:
 
 1. Going into desktop mode, opening a terminal, and deleting/moving the plugin dir from `~/homebrew/plugins/`
 
