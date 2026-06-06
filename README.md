@@ -1,4 +1,6 @@
-# Decky Plugin Manager ![GitHub Release](https://img.shields.io/github/v/release/deckerr95/decky-plugin-manager)
+# Decky Plugin Manager
+
+![GitHub Release](https://img.shields.io/github/v/release/deckerr95/decky-plugin-manager)
 
 A user-friendly tool to individually enable/disable/uninstall [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugins. Features a graphical interface (whiptail) with CLI fallback. Essential when a single broken plugin prevents Decky's user interface from loading after SteamOS updates. Easy usage from Game Mode.
 
