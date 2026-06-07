@@ -260,7 +260,6 @@ This project aims to provide a seamless, quick and easy way of disabling/enablin
 * **Whiptail not working or showing basic interface**
   * Whiptail may not be installed on your system
   * Non-interactive terminal session (CLI fallback will be used)
-  * Install whiptail for full GUI experience: `sudo pacman -S whiptail` (Arch-based) or `sudo apt install whiptail` (Debian-based)
 
 ---
 
